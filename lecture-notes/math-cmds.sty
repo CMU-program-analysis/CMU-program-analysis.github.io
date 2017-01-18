@@ -1,0 +1,77 @@
+% Commands for typesetting mathematics.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{math-cmds}
+\RequirePackage{amssymb}
+
+%\newcommand{\eqdef}{\stackrel{{\rm def}}{=}}
+\newcommand{\eqdef}{\mathrel{\colon=}}
+\newcommand{\is}{\equiv}
+
+% arrows of various kinds
+\newcommand{\pto}{\rightharpoonup}      % partial function
+\newcommand{\fto}{\pto_{\it fin}}       % finite partial function
+\newcommand{\inclu}{\hookrightarrow}    % inclusion
+\newcommand{\mono}{\rightarrowtail}     % monomorphism
+\newcommand{\epi}{\twoheadrightarrow}   % epimorphism
+%\newcommand{\leadsto}{\rightsquigarrow}        % leads to
+\newcommand{\iso}{\cong}                % isomorphism
+
+\newcommand{\id}{\mathop{\it id}\nolimits}      % identity function
+
+% set braces
+\newcommand{\set}[2]{\{\,#1\,\mid\,#2\,\}}
+\newcommand{\singleton}[1]{\{\,{#1}\,\}}
+
+% families
+\newcommand{\family}[2]{\langle\,#1\,\rangle_{#2}}
+
+% set operations and relations
+\newcommand{\cross}{\times}             % cartesian doubts
+\newcommand{\union}{\cup}
+\newcommand{\intersect}{\cap}
+\newcommand{\subs}{\subseteq}
+\newcommand{\el}{\in}
+\newcommand{\nel}{\notin}
+\newcommand{\Dmn}{\mathop{\rm dom}}
+\newcommand{\Rng}{\mathop{\rm rng}}
+\newcommand{\Pow}{\mathop{\mathcal{P}}}
+\newcommand{\Img}{\mathop{\rm img}\nolimits}
+
+% turnstiles
+%\newcommand{\ts}{\vdash}
+\newcommand{\dts}{\models}
+
+% least and greatest elements
+\newcommand{\bottom}{\bot}
+%\newcommand{\top}{\top}
+
+% connectives
+\newcommand{\fa}{\forall}
+\newcommand{\te}{\exists}
+%\newcommand{\implies}{\mathrel\supset}
+
+% meaning function
+\newcommand{\dlb}{\lbrack\!\lbrack}
+\newcommand{\ldb}{\dlb}
+\newcommand{\drb}{\rbrack\!\rbrack}
+\newcommand{\rdb}{\drb}
+\newcommand{\mean}[1]{\mathop{\dlb #1\drb}\nolimits}
+
+% sequence of #1's, numbered up to #2  (e.g., seq{x}{n} for x1 ... xn   )
+\newcommand{\seq}[2]{#1_{1} \ldots #1_{#2}}  
+
+% comma--separated sequence
+\newcommand{\cseq}[2]{#1_{1},\ldots,#1_{#2}}
+
+% free variables
+\newcommand{\FV}{\mathop{\rm FV}\nolimits}
+
+% syntactic substitution of #1 for #2 in #3
+\newcommand{\subst}[3]{[#1/#2]#3}
+
+% context-free grammars
+\newcommand{\bnfdef}{::=}
+%\mathrel{\colon\colon\mathord{=}}}
+\newcommand{\bnfalt}{\mathrel{\mid}}
+\newcommand{\bnfas}{\bnfdef}

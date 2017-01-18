@@ -1,0 +1,323 @@
+\documentclass[11pt]{article}
+\usepackage{palatino}
+\usepackage{latexsym}
+\usepackage{verbatim}
+\usepackage{alltt}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{amsmath,proof,amsthm,amssymb,enumerate}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{math-cmds}
+
+\newcommand{\definition}[2]
+  {\bigskip
+   \begin{tabular}{p{1.5in}p{4.0in}}
+        \textbf{#1} & #2 \\
+        \end{tabular}
+  }
+
+\def\Natural{\mathbb{N}}
+\def\Integer{\mathbb{Z}}
+\def\prop{\textsf{\,\,prop}}
+\def\thm{\textsf{\,\,thm}}
+\def\implies{\Rightarrow}
+
+\def\While{\textsc{While}}
+\def\WhileThAddr{\textsc{While3Addr}}
+
+\title{Bonus Notes:\\
+\textsc{While} and \textsc{While3Addr} Reference}
+\author{15-819O: Program Analysis \emph{(Spring 2016)} \\
+        Claire Le Goues \\
+		{\tt clegoues@cs.cmu.edu}}
+\date{}
+
+\begin{document}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\maketitle
+
+As of week four of class, we've gone over or produced syntax/semantics for both \While\ and \WhileThAddr\ several times, including in class (on the board, in slides, in notes) and on the homework.  For clarity, this document summarizes the syntactic and semantic rules for \While\ and \WhileThAddr\ that we have covered together (i.e., those that were not part of an assignment as a question for you to answer).  Most of this material is redundant (for example, you should refer to the first set of lecture notes for more complete explanations of the material),  but organized in a more straightforward way for use as a reference.  
+
+Rule of thumb: Generally, when we discuss new language features, we use the rules for \While; when we engage in proofs about the properties of an analysis, we use the rules for \WhileThAddr, a language we introduced explicitly to simplify elements of analysis. 
+
+\section{\While}
+
+\subsection{Syntax}  
+
+\noindent These metavariables describe the syntactic categories that comprise the \While\ language:
+
+\[
+\begin{array}{ll}
+S   & \mbox{statements}\\
+a   & \mbox{arithmetic expressions (AExp)}\\
+x,y & \mbox{program variables}\\
+n   & \mbox{number literals}\\
+P   & \mbox{boolean predicates (BExp)}\\
+\end{array}
+\]
+
+\noindent The syntax for \While\ is given as follows:
+
+\[
+\begin{array}{llllll}
+S & \bnfdef & x := a & a & \bnfdef & x \\
+  & \bnfalt & \mbox{skip} & & \bnfalt & n \\
+  & \bnfalt & S_1;~ S_2 &  & \bnfalt & a_1 ~op_a~ a_2 \\
+  & \bnfalt & \mbox{if}~ P ~\mbox{then}~ S_1 ~\mbox{else}~ S_2 & op_a & \bnfdef & + \bnfalt - \bnfalt * \bnfalt / \\
+  & \bnfalt & \mbox{while}~ P ~\mbox{do}~ S \\
+  
+P & \bnfdef & \mbox{true}  & op_b & \bnfdef & \mbox{and} \bnfalt \mbox{or} \\
+  & \bnfalt & \mbox{false} & op_r & \bnfdef & <~ \bnfalt ~\le~ \bnfalt ~=~ \bnfalt ~>~ \bnfalt ~\ge~ \\
+  & \bnfalt & \mbox{not}~ P \\
+  & \bnfalt & P_1 ~op_b~ P_2 \\
+  & \bnfalt & a_1 ~op_r~ a_2 \\
+
+\end{array}
+\]
+
+\subsection{Big step semantics}
+
+We use $E$ to range over $\mathcal{E}$, denoting program state: 
+$\mathcal{E} \in \textit{Var} \rightarrow \Integer$.  We use $E(x)$ to mean "the value of $x$ as stored in $E$'' and $E[x \mapsto n]$ to mean "$E$ with the change that $x$ now maps to $n$.''
+
+$\Downarrow$ denotes a big step \emph{judgement} over language constructs in \While.  All language constructs are evaluated in the context of a program state $E$:\footnote{We typically do not differentiate notationally between judgements over expressions and those over statements, except in terms of the results, e.g., arithmetic expressions evaluate to integers while statements evaluate to new states.}  
+
+\begin{itemize}[labelwidth=0.7em, labelsep=0.6em, topsep=0ex, itemsep=0ex,
+  parsep=0ex] 
+\item $e \in a$ evaluate to integers: $\langle e, E \rangle \Downarrow n$
+\item $p \in P$ evaluate to booleans:\footnote{We also sometimes use $b$ or even $e$ for particular boolean expressions in our judgements, when the context is clear.} $\langle p, E \rangle \Downarrow b$
+\item $S \in S$ evaluate to new states: $\langle S, E \rangle \Downarrow E'$
+\end{itemize}
+
+\noindent Rules we have seen for arithmetic expressions include:\footnote{I omit multiplication and subtraction because they are blindingly obvious once you've seen addition.}
+
+\[
+\begin{array}{llr}
+\infer[ints]{\langle n, E \rangle \Downarrow n}{}
+&~~~~~~~~~~~~&
+\infer[vars]{\langle x, E\rangle \Downarrow E(x)} {}
+\end{array}
+\]
+
+\[
+\infer[add]{\langle e_1 + e_2, E \rangle \Downarrow n_1 + n_2}{\langle e_1, E\rangle \Downarrow
+  n_1& \langle e_2, E \rangle \Downarrow n_2}
+\]
+
+
+
+\noindent Rules we have seen for boolean expressions are:\footnote{I only provide one relational operator rule, because the rest follow obviously.}
+
+\[
+\begin{array}{llr}
+\infer[$\textit{true}$]{\langle \mbox{true}, E \rangle \Downarrow \mbox{true}}{}  
+&~~~~~~~~~~~~&
+\infer[$\textit{false}$]{\langle \mbox{false}, E \rangle \Downarrow \mbox{false}}{} 
+\end{array}
+\]
+
+\[
+\infer[\leq]{\langle e_1 \leq e_2, E \rangle \Downarrow n_1 \leq n_2 }{\langle e_1, E \rangle \Downarrow n_1 & \langle e_2, E \rangle \Downarrow n_2} 
+\]
+
+
+\[
+\begin{array}{llclr}
+
+\infer[$\textit{and1}$]{\langle b_1 \wedge b_2, E \rangle \Downarrow \mathtt{false}}{\langle b_2, E \rangle \Downarrow \mbox{true} & \langle b_2, E \rangle \Downarrow \mbox{true} }
+&~~~~&
+\infer[$\textit{and2}$]{\langle b_1 \wedge b_2, E \rangle \Downarrow \mbox{false}} {\langle b_1, E \rangle \Downarrow \mbox{false}}
+&~~~~&
+\infer[$\textit{and3}$]{\langle b_1 \wedge b_2, E \rangle \Downarrow \mbox{false}}{\langle b_2, E \rangle \Downarrow \mbox{false}} 
+\end{array}
+\]
+
+
+\[
+\begin{array}{lcr}
+\infer[$\textit{or1}$]{\langle b_1 \vee b_2, E \rangle \Downarrow \mbox{true}}{\langle b_1, E \rangle \Downarrow \mbox{true} & \langle b_2, E \rangle \Downarrow \mbox{true} }
+&~~~~~~~~~~~~&
+\infer[$\textit{or2}$]{\langle b_1 \vee b_2, E \rangle \Downarrow b'}{\langle b_1, E \rangle \Downarrow false & \langle b_2, E \rangle \Downarrow b'} 
+\end{array}
+\]
+
+We have options here, of course.  For example, an alternative way to specify and is using the following two rules in place of the two I gave above:
+\[
+\begin{array}{lcr}
+\infer[$and-alt1$]{\langle b_1 \wedge b_2, E \rangle \Downarrow b'} {\langle b_1, E \rangle \Downarrow \mbox{true} & \langle b_2, E \rangle \Downarrow b' }
+&~~~~~~~~~~~~&
+\infer[$and-alt2$]{\langle b_1 \wedge b_2, E \rangle \Downarrow \mbox{false}} {\langle b_1, E \rangle \Downarrow \mbox{false}}
+\end{array}
+\]
+
+
+\noindent Rules we have seen  for statements are:
+
+
+
+\[
+\begin{array}{llr}
+\infer[skip]{\langle \mathtt{skip}, E \rangle \Downarrow E}{}
+&~~~~~~~~~~~~&
+\infer[assignment]{\langle x := e, E\rangle \Downarrow E[x \mapsto n]} {\langle e, E\rangle \Downarrow n} 
+\end{array}
+\]
+
+
+\[
+\infer[seq]{\langle s_1 ; s_2, E\rangle \Downarrow E''}{\langle s_1,E\rangle \Downarrow E'
+  ~~~ \langle s_2, E' \rangle \Downarrow E''}
+\]
+
+\[
+\begin{array}{llr}
+
+\infer[$\textit{if-true}$]{\langle \mathtt{if}~b~\mathtt{then}~s_1~\mathtt{else}~s_2, E\rangle  \Downarrow
+  E'}{\langle b, E\rangle \Downarrow \mathtt{true} & \langle s_1, E\rangle \Downarrow
+  E'}
+&~~~~~~~~~~~~&
+\infer[$\textit{if-false}$]{\langle \mathtt{if}~b~\mathtt{then}~s_1~\mathtt{else}~s_2, E \rangle \Downarrow
+  E'}{\langle b, E\rangle \Downarrow \mathtt{false} & \langle s_2, E\rangle \Downarrow
+  E'}
+  \end{array}
+\]
+
+\[
+\begin{array}{llr}
+
+\infer[$\textit{while-true}$]{\langle \mathtt{while}~b~\mathtt{do}~s, E \rangle \Downarrow
+  E'}{\langle b, E\rangle \Downarrow \mathtt{true} & \langle s;~\mathtt{while}~b~\mathtt{do}~s, E \rangle \Downarrow E'}
+  &~~~~~~~~~~~~&
+
+\infer[$\textit{while-false}$]{\langle \mathtt{while}~b~\mathtt{do}~s, E \rangle \Downarrow
+  E}{\langle b, E\rangle \Downarrow \mathtt{false}}
+\end{array}
+\]
+
+\subsection{Small step semantics}
+
+\emph{(We didn't do a full specification of the small step semantics for \While\ together, and focused on statements rather than expressions.  I thus give only one example for expressions; the rest follow.  If we do the small-step rules for statements other than if and while together at some point, I will update this document.  Otherwise, they're still fair game for an assignment or exam. Consider practicing them!)}
+
+$\rightarrow$ denotes the small step judgement over \While\ constructs.  It operates over configurations, returning a new configuration.  $\langle S, E \rangle \rightarrow \langle S', E' \rangle $ indicates one step of execution; $\langle S, E\rangle \rightarrow^* \langle S', E' \rangle $ indicates zero or more steps of execution. 
+The final configuration in the small-step semantics for \While\ is  $\langle \mathtt{skip}, E\rangle$.  
+To be complete, we also define auxiliary operators for arithmetic and boolean expressions.  
+The types are thus:
+
+\[
+\begin{array}{lll}
+\rightarrow & : & (\mathtt{Stmt} \cross E) \rightarrow (\mathtt{Stmt} \cross E) \\
+\rightarrow_a & : & (\mathtt{Aexp} \cross E) \rightarrow \mathtt{Aexp} \\
+\rightarrow_b & : & (\mathtt{Bexp} \cross E) \rightarrow \mathtt{Bexp} \\
+\end{array}
+\]
+
+Rules for arithmetic expressions include:\footnote{We could reduce $a_1$ and $a_2$ one at a time in the addition rule; this is a choice of the language designer.}
+
+\[
+\begin{array}{lcr}
+\infer[$\textit{vars}$]{<x, E> \rightarrow_a E(x)}{}
+  &~~~~~~~~~~~~&
+\infer[$\textit{addition1}$]{\langle a_1 + a_2, E \rangle \rightarrow_a n_1 + n_2}{\langle a_1, E \rangle \rightarrow_a^* n_1  & \langle a_2, E \rangle \rightarrow_a^* n_2}
+\end{array}
+\]
+
+Rules for statements include:
+\[
+\begin{array}{lcr}
+\infer[$\textit{assignment1}$]{\langle x := a, E \rangle \rightarrow \langle x := n, E \rangle}{\langle a, E \rangle \rightarrow_a^* n} 
+  &~~~~~~~~~~~~&
+\infer[$\textit{assignment2}$]{\langle x := n, E \rangle \rightarrow \langle \mbox{skip}, E[x \mapsto n] \rangle}{} 
+\end{array}
+\]
+
+\[
+\infer[$\textit{ifGen}$]{\langle \mathtt{if}~b~\mathtt{then}~S_1~\mathtt{else}~S_2, E\rangle \rightarrow \langle \mathtt{if}~b'~\mathtt{then}~S_1~\mathtt{else}~S_2, E\rangle}
+{ \langle b, E\rangle \rightarrow_b~b'}
+\]
+
+\[
+\infer[$\textit{ifT}$]{\langle \mathtt{if}~\mathtt{true}~\mathtt{then}~s_1~\mathtt{else}~s_2, E\rangle \rightarrow  \langle s_1,E'\rangle }{}
+\]
+
+
+\[
+\infer[$\textit{ifF}$]{\langle \mathtt{if}~\mathtt{false}~\mathtt{then}~s_1~\mathtt{else}~s_2, E\rangle \rightarrow
+  \langle s_2,E'\rangle}{}
+\]
+
+\[
+\infer[$\textit{whileGen}$]{\langle \mathtt{while}~\mathtt{b}~\mathtt{do}~S, E \rangle \rightarrow  \langle \mathtt{while} ~b'~\mathtt{do} S, E \rangle}{\langle b, E \rangle \rightarrow_b b'}
+\]
+
+\[
+\infer[$\textit{whileT}$]{\langle \mathtt{while}~\mathtt{b}~\mathtt{do}~S, E \rangle \rightarrow  \langle S; \mathtt{while} ~b~\mathtt{do} S, E \rangle}{\langle b, E \rangle \rightarrow_b \mathtt{true}}
+\]
+
+\[
+\infer[$\textit{whileF}$]{\langle \mathtt{while}~\mathtt{b}~\mathtt{do}~S, E \rangle \rightarrow  \langle \mbox{skip}, E \rangle}{\langle b, E \rangle \rightarrow_b \mathtt{false}}
+\]
+
+
+\section{\WhileThAddr}
+
+
+\subsection{Syntax}
+
+\WhileThAddr\ is intended to be equivalent to \While, but easier to analyze.  The syntax is:
+
+
+\[
+\begin{array}{llllll}
+I & \bnfdef & x := n & op & \bnfdef & + \bnfalt - \bnfalt * \bnfalt / \\
+  & \bnfalt & x := y & op_r & \bnfdef & <~ \bnfalt ~=~  \\
+  & \bnfalt & x := y ~op~ z & P & \in & \Natural \rightarrow I\\
+  & \bnfalt & \mbox{goto}~n \\
+  & \bnfalt & \mbox{if}~x~op_r~0~\mbox{goto}~n \\[1ex]
+\end{array}
+\]
+
+
+The configuration of a \WhileThAddr\ program includes (usually implicitly) the stored program $P$, the state environment $E$, and a program counter $n$, or $c \in E \cross \Natural$. 
+
+\subsection{(Small-step) Semantics}
+
+We did not formally distinguish between big- and small-step semantics for \WhileThAddr\ in class; on Homework 1, I left it to you to sort out something reasonable.  Given our definition of a configuration for \WhileThAddr\ above, defining a big- vs. small-step semantic distinction for \WhileThAddr\ isn't very informative.  So, here, I give only a small-step semantics that you should be able to use in any proof of soundness I will ask you for, unless otherwise indicated (if, for example, I ask you to extend the \WhileThAddr\ language with a new construct, for example, these will not suffice and you will have to extend the semantics):
+
+\[
+\infer[\textit{step-const}]{P \vdash <E,n> \leadsto E[x \mapsto m],n+1}{P[n] = x := m}
+\]
+
+\[
+\begin{array}{c}
+\infer[\textit{step-copy}]
+	{P \vdash <E,n> \leadsto E[x \mapsto E[y]],n+1}
+	{P[n] = x := y}\\[3ex]
+	\infer[\textit{step-arith}]
+	{P \vdash <E, n> \leadsto E[x \mapsto m],n+1}
+	{P[n] = x := y ~op~ z & E[y] ~\mathbf{op}~ E[z] = m}\\
+\end{array}
+\]
+\[
+\begin{array}{c}	
+
+\infer[\textit{step-goto}]
+	{P \vdash <E,n> \leadsto <E,m>}
+	{P[n] = \mbox{goto}~m}\\[3ex]
+	
+\infer[\textit{step-iftrue}]
+	{P \vdash <E,n> \leadsto <E,m>}
+	{P[n] = \mbox{if}~x~op_r~0~\mbox{goto}~m & E[x] ~\mathbf{op_r}~ 0 = true}\\[3ex]
+	
+\infer[\textit{step-iffalse}]
+	{P \vdash E,n \leadsto E,n+1}
+	{P[n] = \mbox{if}~x~op_r~0~\mbox{goto}~m & E[x] ~\mathbf{op_r}~ 0 = false}\\[3ex]
+	
+\end{array}
+\]
+
+
+
+
+\end{document}

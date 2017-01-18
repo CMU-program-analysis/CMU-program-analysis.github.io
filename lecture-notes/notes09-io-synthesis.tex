@@ -1,0 +1,144 @@
+\documentclass[11pt]{article}
+\usepackage{palatino}
+\usepackage{latexsym}
+\usepackage{verbatim}
+\usepackage{alltt}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{amsmath,proof,amsthm,amssymb,enumerate}
+\usepackage{math-cmds}
+\usepackage{stmaryrd}
+\usepackage{upgreek}
+
+
+\newcommand{\question}[2]
+  {\bigskip \noindent
+   {\bf Question #1} (#2 points).}
+
+\newcommand{\extracreditquestion}[1]
+  {\bigskip \noindent
+   {\bf Question #1} (EXTRA CREDIT).}
+
+\newcommand{\definition}[2]
+  {\bigskip
+   \begin{tabular}{p{1.5in}p{4.0in}}
+        \textbf{#1} & #2 \\
+        \end{tabular}
+  }
+
+\def\prop{\textsf{\,\,prop}}
+\def\thm{\textsf{\,\,thm}}
+\def\implies{\Rightarrow}
+
+
+
+
+\title{Lecture Notes: Component-Based Program Synthesis\footnote{These notes are inspired by Section III.B of Nguyen~\emph{et al.}, ICSE 2013 ...which provides a really beautifully clear exposition of the work that originally proposed this type of synthesis in Jha~\emph{et al.}, ICSE 2010.}}
+\author{15-819O: Program Analysis \emph{(Spring 2016)} \\
+        Claire Le Goues \\
+		{\tt clegoues@cs.cmu.edu}}
+\date{}
+
+\begin{document}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\maketitle
+
+
+\newcommand{\pfalse}{\mbox{false}}
+\newcommand{\ptrue}{\mbox{true}}
+\newcommand{\pand}{\mbox{and}}
+\newcommand{\por}{\mbox{or}}
+\newcommand{\pskip}{\mbox{skip}}
+\newcommand{\pif}{\mbox{if}}
+\newcommand{\pthen}{\mbox{then}}
+\newcommand{\pelse}{\mbox{else}}
+\newcommand{\pdo}{\mbox{do}}
+\newcommand{\pwhile}{\mbox{while}}
+%\newcommand{\p}{\mbox{}}
+
+\newcommand{\mtrue}{\mathbf{true}}
+\newcommand{\mfalse}{\mathbf{false}}
+
+\paragraph{Problem statement and intuition.} Given a set of input-output pairs  ${ < \alpha_0, \beta_0 > \ldots < \alpha_n, \beta_n > }$ and N components ${ f_1, \ldots f_n }$,  the goal is to synthesize a function $f$ out of the components such that $\forall \alpha_i. f(\alpha)$ produces $\beta_i$.
+%
+We achieve this by constructing and solving a set of constraints over $f$, passing those constraints to an SMT solver, and using a returned satisfying model to reconstruct $f$.  The key idea is that we define a set of \emph{location variables} for each component and inputs and outputs. The synthesis process then reduces to finding values for those location variables, which then tell us which line of the program on which each component should appear.  This requires two sets of constraints: one to ensure the program is \emph{well-formed}, and the other that ensures the program encodes the desired \emph{functionality}.
+
+\vspace{0.75em}
+\noindent\textbf{Definitions.}
+We assume for simplicity that each component has a single output, and one or more inputs. The inputs for the $i^{th}$ component, are denoted as $\overrightarrow{\chi}_i$; its output, $r_i$.
+$Q$ denotes the set of all input variables from all components; $R$ the set of output variables from all components.  Finally, for all variables $x$, we define a location variable $l_x$, which denotes where $x$ is defined.  $L$ is the set of all location variables:
+\[
+\begin{array}{ccl}
+Q & := & \bigcup_{i=1}^N \overrightarrow{\chi}_i \\[0.5em]
+R & := & \bigcup_{i=1}^N {r_i}  \\[0.5em]
+L & := & \{l_x | x \in Q \cup R \cup \overrightarrow{\chi} \cup {r}\} 
+\end{array}
+\]
+ 
+\vspace{0.75em}
+\noindent\textbf{Well-formedness.}  $\psi_{wfp}$ denotes the well-formedness constraint.  Let $M = |\overrightarrow{\chi}| + N$, where $N$ is the number of available components:
+
+\[
+\begin{array}{ll}
+\psi_{wfp}(L,Q,R)  \stackrel{def}{=} & \bigwedge\limits_{x \in Q} ( 0 \leq l_x < M)~ \wedge 
+ \bigwedge\limits_{x\in R} (|\overrightarrow{\chi}| \leq l_x < M) ~\wedge \\
+& \psi_{cons}(L,R) \wedge  \psi_{acyc}(L,Q,R)
+\end{array}
+\]
+
+The first line of that definition says that inputs must be defined before outputs.  $\psi_{cons}$ and $\psi_{acyc}$ dictate that there is only one component in each line and that the inputs of each component are defined before they are used, respectively:
+
+\[
+\begin{array}{rcl}
+\psi_{cons}(L,R) & \stackrel{def}{=} & \bigwedge\limits_{x,y \in R, x\not\equiv y} (l_x \neq l_y)  \\[0.5em]
+\psi_{acyc}(L,Q,R) & \stackrel{def}= & \bigwedge\limits_{i=1}^N \bigwedge\limits_{x \in\overrightarrow{\chi}_i, y \equiv r_i} l_x < l_y
+\end{array}
+\]
+
+\vspace{0.75em}
+ \noindent\textbf{Functionality.} $\phi_{func}$ denotes the functionality constraint that guarantees that the solution $f$ satisfies the given input-output pairs:
+ 
+ \[
+ \begin{array}{rcl}
+ \phi_{func}(L,\alpha,\beta) & \stackrel{def}{=} & \psi_{conn}(L, \overrightarrow{\chi}, r, Q, R) \wedge ~ \phi_{lib}(Q,R) ~\wedge (\alpha = \overrightarrow{\chi}) \wedge (\beta = r) \\ [0.5em]
+ 
+  \psi_{conn}(L,\overrightarrow{\chi},r,Q,R) & \stackrel{def}{=} & \bigwedge \limits_{x,y \in Q \cup R \cup \overrightarrow{\chi} \cup \{ r \}} (l_x = l_y \implies x = y) \\ [0.5em]
+     
+ \phi_{lib}(Q,R) & \stackrel{def}{=} & ( \bigwedge\limits_{i=1}^{N} 
+ \phi_i  (\overrightarrow{\chi}_i,  r_i)) \\ 
+ 
+ \end{array}
+ \]
+ 
+ $\psi_{conn}$ encodes the meaning of the location variables: If two locations are equal, then the values of the variables defined at those locations are also equal.  $\phi_{lib}$ encodes the semantics of the provided basic components, with $\phi_i$ representing the specification of component $f_i$.  The rest of $\phi_{func}$ encodes that if the input to the synthesized function is $\alpha$, the output must be $\beta$.  
+ 
+ Almost done!  $\phi_{func}$ provides constraints over a single input-output pair $\alpha_i, \beta_i$, we still need to generalize it over all $n$ provided pairs $\{ < \alpha_i, beta_i > | 1 \leq i \leq n \}$:
+ 
+ \[
+ \begin{array}{c}
+ \theta \stackrel{def}{=} ( \bigwedge \limits_{i=1}^n \phi_{func}(L, \alpha_i, \beta_i)) \wedge \psi_{wfp}(L, Q,R)
+ \end{array}
+ \]
+
+$\theta$ collects up all the previous constraints, and says that the synthesized function f should satisfy all input-output pairs and the function has to be well formed.  
+
+ \paragraph{LVal2Prog.}  The only real unknowns in all of $\theta$ are the values for the location variables $L$.  So, the solver that provides a satisfying assignment to $\theta$ is basically giving a valuation of $L$ that we then turn into a constructed program as follows:
+ 
+Given a valuation of $L$, $\mathtt{Lval2Prog(L)}$ converts it to a program as follows: The $i^th$ line of the  program is $r_j = f_j(r_{\sigma(1)}, ..., r_{\sigma(\upeta)})$  
+when$ l_{r_j} == i$ and $\bigwedge\limits_{k=1}^{\upeta} (l_{\chi_j^k} == l_{r_{\sigma(k)}})$, where $\upeta$ is the number of inputs for component $f_j$ and $\chi_j^k$ denotes the $k^{th}$ input parameter of component $f_j$.  The program output is produced in line $l_r$.  
+
+\paragraph{Example.}  Assume we only have one component, +.  + has two inputs: $\chi^1_+$ and $\chi^2_+$.  The output variable is $r_+$.  Further assume that the desired program $f$ has one input $\chi$ (which we call $\mathtt{input}^0$ in the actual program text) and one output $r$.  Given a mapping for location variables of: 
+$\{ l_{r_+}\mapsto 1, l_{\chi^1_+} \mapsto 0, \chi^2_+ \mapsto 0, l_r \mapsto 1, l_\chi \mapsto 0 \}$, then the program looks like:
+
+\[
+\begin{array}{ll}
+0 & r_0 := \mathtt{input}^0 \\
+1 & r_+ := r_0 + r_0 \\
+2 & \mathtt{return}~ r_+
+\end{array}
+\]
+
+This occurs because the location of the variables used as input to + are both on the same line (0), which is also the same line as the input to the program (0).  $l_r$, the return variable of the program, is defined on line 1, which is also where the output of the + component is located.  ($l_{r_+}$).  We added the return on line 2 as syntactic sugar.
+
+\end{document}
