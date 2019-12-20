@@ -9,15 +9,15 @@
   <script>
     function toggle() { document.getElementById("navigation").classList.toggle("hidden"); document.getElementsByTagName("body")[0].classList.toggle("push"); }
   </script>
-    <meta content="Jonathan Aldrich" name="author">
+    <meta content="Claire Le Goues" name="author">
     <meta content="17-355/17-665/17-819: Program Analysis" name="description">
   </head>
   <body>
 <nav id="navigation" class="hidden">
   <div class="container">
     <div class="course-semester">
-      <div class="course"><a href="http://www.cs.cmu.edu/~aldrich/courses/17-355-18sp/">17-355/17-665/17-819</a></div>
-      <div class="semester">Spring 2018</div>
+      <div class="course"><a href="https://cmu-program-analysis.github.io">17-355/17-665/17-819</a></div>
+      <div class="semester">Spring 2019</div>
     </div>
     <div id="hamburger" onclick="toggle()">
       <div></div>
@@ -28,7 +28,7 @@
       <li><a href="index.html">Overview</a></li>
       <li><a href="syllabus.html">Syllabus</a></li>
       <li onclick="toggle()"><a href="index.html#schedule">Schedule</a></li>
-      <li><a href="https://canvas.cmu.edu/courses/3885">Canvas</a></li>
+      <li><a href="https://canvas.cmu.edu/courses/13477/">Canvas</a></li>
     </ul>
   </div>
 </nav>
@@ -40,23 +40,45 @@
 <div id="main" class="container">
 
   <div class="cf">
-      <p>Class Tu/Th 9:00 - 10:20 a.m. in <abbr title="Porter Hall">PH</abbr> A18B<br />
-      Recitation F 9:30 - 10:20 a.m. in <abbr title="Gates Hillman Center">GHC</abbr> 4211<br />
-      Spring 2018<br />
+      <p>Class Tu/Th 10:30 - 11:50 a.m. in <abbr title="Gates Hillman Center">GHC</abbr> 4211<br />
+      Recitation F 1:30 - 2:20 p.m. in <abbr title="Wean Hall">WEH</abbr> 5415<br />
+      Spring 2019<br />
       12 units</p>
-      Professors <strong><a href="http://www.cs.cmu.edu/~aldrich/">Jonathan Aldrich</a></strong> and <strong><a href="https://clairelegoues.com/">Claire Le Goues</a></strong><br />
-      aldrich and clegoues at cs dot cmu dot edu<br />
-      <abbr title="Wean Hall">WEH</abbr> 4216 and 5117<br />
-      Office hours, Le Goues: Wed, 2:30-3:30, or by appointment<br />
-      Office hours, Aldrich: Thu, 2-3pm, or by appointment<br />
+  <div class="cf">
+    <div class="instructor">
+      Professor <strong><a href="https://clairelegoues.com/">Claire Le Goues</a></strong><br>
+      <abbr title="Wean Hall">WEH</abbr> 5117<br />
+      Office hours: TBA, or by appointment<br />
+      Email: clegoues@cs.cmu.edu<br />
+      <img src="clg.jpg" />
+    </div>
+     <div class="instructor">
+       <strong><a href="https://www.cs.cmu.edu/~jlacomis/">Christopher Meiklejohn</a></strong><br>
+       <abbr title="Wean Hall">WEH</abbr> 5119<br />
+      Office hours: TBA<br />
+       Email: jlacomis@cmu.edu<br />
+        <img src="jl.jpg" />
+    </div>
+  </div>
+  <p>Both instructors have an open door policy: If either of the 
+instructors' office doors are open and no-one else is meeting with us, 
+we are happy to answer any course-related questions.  If you prefer an appointment, 
+email the instructors.</p>
       <!-- TODO: Office hour:  -->
-      For appointments outside of office hours, email the instructor.
   </div>
 
   <h2>Course Description</h2>
-  <p>This course covers both foundations and practical aspects of the automated analysis of programs, which is becoming increasingly critical to find software errors and assure program correctness.  The theory of abstract interpretation captures the essence of a broad range of program analyses and supports reasoning about their correctness.  Building on this foundation, the course will describe program representations, data flow analysis, alias analysis, interprocedural analysis, dynamic analysis, and symbolic execution.  Through assignments and projects, students will design and implement practical analysis tools that find bugs and verify properties of software.</p>
+  <p>This course covers both foundations and practical aspects of the automated
+  analysis of programs, which is becoming increasingly critical to find software
+  errors and assure program correctness.  The theory of abstract interpretation
+  captures the essence of a broad range of program analyses and supports
+  reasoning about their correctness.  Building on this foundation, the course
+  will describe program representations, data flow analysis, alias analysis,
+  interprocedural analysis, dynamic analysis, and symbolic execution.  Through
+  assignments and projects, students will design and implement practical
+  analysis tools that find bugs and verify properties of software.</p>
 
-<p><b>New:</b> For 2018, this course fulfills the <b>Logic and Languages constrained elective category</b> for the Computer Science major.</p>  
+<p><b>New:</b> This course fulfills the <b>Logic and Languages constrained elective category</b> for the Computer Science major.</p>  
 
     <h3><span style="color:brown">Why take this course?</span></h3>
     <ul>
