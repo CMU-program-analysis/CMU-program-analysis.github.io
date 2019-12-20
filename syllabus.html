@@ -41,11 +41,21 @@
 
 <h3>Learning Objectives</h3>
 
-<p>The learning goals describe what we want students to know or be able to do by the end of the semester. We evaluate whether learning goals have been achieved through assignments, in-class discussion and exercises, exams, and the final project.  These goals are:</p>
+<p>The learning goals describe what we want students to know or be able to do by
+  the end of the semester. We evaluate whether learning goals have been achieved
+  through assignments, in-class discussion and exercises, exams, and the final
+  project.  These goals are:</p>
 
 <ul>
-  <li>Students will learn to use abstract interpretation to formally prove that an analysis is sound and will terminate.  They will also learn to analyze the scalability of a program analysis and compare the precision of different analysis techniques.</li>
-  <li>Students will learn to implement program analyses that verify program properties and find bugs using dataflow analysis, interprocedural analysis, alias analysis, and symbolic execution.  Furthermore, they will learn how program analysis frameworks can leverage abstract interpretation ideas in order to reuse the vast majority of analysis boilerplate.</li>
+  <li>Students will learn to use abstract interpretation to formally prove that
+  an analysis is sound and will terminate.  They will also learn to analyze the
+  scalability of a program analysis and compare the precision of different
+  analysis techniques.</li>
+  <li>Students will learn to implement program analyses that verify program
+  properties and find bugs using dataflow analysis, interprocedural analysis,
+  alias analysis, and symbolic execution.  Furthermore, they will learn how
+  program analysis frameworks can leverage abstract interpretation ideas in
+  order to reuse the vast majority of analysis boilerplate.</li>
 </ul>
 
 The course will also teach more general, transferrable skills in computer science.  These include:
@@ -54,6 +64,7 @@ The course will also teach more general, transferrable skills in computer scienc
   <li>The ability to reason rigorously about what code does</li>
   <li>The ability to formally model discrete software systems and prove theorems about those models</li>
   <li>The ability to build moderate-scale programs using software frameworks</li>
+  <li>The ability to run large, existing open-source tools</li>
 </ul>
 
 <hr />
@@ -80,10 +91,15 @@ postconditions, and invariants</li>
 
 <h3>Degree Requirements Fulfilled</h3>
 
-<p>Undergraduates: This course can be used to satisfy the Logic and Languages constrained elective category of the Computer Science Bachelor's Degree.
-It also satisfies the Technical Software Engineering requirement for the Software Engineering minor, subject to double-counting rules.</p>
-<p>Masters: The course is preapproved for the Theoretical Foundations requirement of the Computer Science master's degree.</p>
-<p>PhD students: This course satisfies the SYM area requirement for the SE PhD. It has also been used to satisfy the Algotirhms/Complexity/Programming Languages requireemnt for the ECE PhD by previous students.</p>
+<p>Undergraduates: This course can be used to satisfy the Logic and Languages
+constrained elective category of the Computer Science Bachelor's Degree.  It
+also satisfies the Technical Software Engineering requirement for the Software
+Engineering minor, subject to double-counting rules.</p>
+<p>Masters: The course is preapproved for the Theoretical Foundations
+requirement of the Computer Science master's degree.</p>
+<p>PhD students: This course satisfies the SYM area requirement for the SE
+PhD. It has also been used to satisfy the Algotirhms/Complexity/Programming
+Languages requireemnt for the ECE PhD by previous students.</p>
 
 <hr />
 
@@ -96,41 +112,71 @@ It also satisfies the Technical Software Engineering requirement for the Softwar
   <li>10% exercises and in-class participation</li>
 </ul>
 
-<p><b>Assignments</b> are a mixture of formal definitions and proofs covering analysis theory, and programming exercises that cover the principled construction of program analyses.  Both forms of assignments will be assessed based on correctness and clarity of the definitions and of the analysis implementation, respectively.</p>
+<p><b>Assignments</b> are a mixture of formal definitions and proofs covering
+analysis theory, and programming exercises that cover the principled
+construction of program analyses.  Both forms of assignments will be assessed
+based on correctness and clarity of the definitions and of the analysis
+implementation, respectively. </p>
+<p>Assignments will be submitted via <a href="https://www.github.com">github</a> and/or Canvas, as appropriate.</p>
 
-<p>The <b>midterm exam</b> will be given in-class.  It is a closed-book exam.  The exam will be designed so that a well-prepared student can complete it within the 80-minute class period.  As time pressure is not the point of the exam, the instructors will make arrangements for students to take extra time after the class period if needed.</p>
+<p>The <b>midterm exam</b> will be given in-class.  It is a closed-book exam.
+The exam will be designed so that a well-prepared student can complete it within
+the 80-minute class period.  As time pressure is not the point of the exam, the
+instructors will make arrangements for students to take extra time after the
+class period if needed.</p>
 
-<p>The <b>final project</b> will be a student-selected analysis implementation project.  It will be assessed similar to a programming assignment.  Ph.D. students (and other students, at their option) take on a project of larger scope that is expected to engage with research; in turn, they are not required to complete the last ordinary assignment.</p>
-
-<p><b>Class participation and readings</b> are important, as most material will be communicated via lectures or readings and reinforced with in-class activities.  In most class periods there will be an in-class exercise designed to allow students to practice the material being taught.  Students will earn one participation point for completing each day's in-class exercise (regardless of the answers given).  When there is no in-class exercise, participation will be assessed via a sign-in sheet.  Students can miss up to 2 days of class or recitation without losing any participation credit.
-
-Expections for readings differ between the Ph.D. (17-819) and masters/undergraduate (17-355/17-665) versions of the course.  Masters and undergraduate students are expected to achieve a high-level understanding of the readings, whereas Ph.D. students will be expected to master more details.  Understanding of the readings will be assessed with online quizzes.
-
-<p>We anticipate that letter grades will be assigned based on the following percentages:</p>
+<p>The <b>semester project</b> will be student-selected.  Students will have
+  several options:
 <ul>
-  <li>90-100% A</li>
-  <li>80-89% B</li>
-  <li>70-79% C</li>
-  <li>60-69% D</li>
-  <li>0-59% R</li>
+<li>A student-defined analysis implementation or other research
+  project.  This is the default assumed project for enrolled Ph.D. students, who
+  are generally expected to take on a project of larger scope that engages with
+  (typically their) research.</li>
+<li>A student-selected, but instructor-guided program analysis-related project
+  with a research angle.  This option is intended to provide guidance for
+  typically non-PhD students who would like to explore program analysis research
+  but do not yet have sufficient exposure to research to define their own
+  project.</li>
+<li>A substantive pull request contributing to a real-world program analysis tool
+  or framework.</li>
+<li>A substantive analysis implementation project.</li>
 </ul>
 
-<p>The instructors reserve the right to adjust these percentages downward if, in his view, the revision would better reflect student mastery of the learning goals in the class.</p>
+In addition to code and a write-up, the projects will be associated with two
+presentations to the class, one during the semester, and one during the final
+exam slot.  The first <i>checkpoint presentation</i> is intended to overview
+background on the project in question; the second will describe what the student
+actually did/accomplished.</p>
+
+<p><b>Class participation and readings</b> are important, as most material will
+be communicated via lectures or readings and reinforced with in-class
+activities.  In most class periods there will be an in-class exercise designed
+to allow students to practice the material being taught.  Students will earn one
+participation point for completing each day's in-class exercise (regardless of
+the answers given).  When there is no in-class exercise, participation will be
+assessed via a sign-in sheet.  Students can miss up to 2 days of class unexcused
+without losing any participation credit; exceptions will be made as needed.
 
 <hr />
 
 <h3 id="textbooks">Supplemental Textbook</h3>
 
-<p>The primary reference for this course is the instructors' course notes.  For those who would like to have a second textbook as a reference, the course schedule indicates when certain topics are covered in the supplemental text.  These readings are <strong>optional</strong> but we provide them for those who would like a second reference.  The supplemental text is:</p>
+<p>The primary reference for this course are the provided course notes.  For
+those who would like to have a second textbook as a reference, the course
+schedule indicates when certain topics are covered in the supplemental text.
+These readings are <strong>optional</strong> but we provide them for those who
+would like a second reference.  The supplemental text is:</p>
 
-<p>Nielson, Nielson, and Hankin. <a href="http://www2.imm.dtu.dk/%7Eriis/PPA/ppa.html">Principles of Program Analysis</a> (PPA).</p>
+<p>Nielson, Nielson, and
+Hankin. <a href="http://www2.imm.dtu.dk/%7Eriis/PPA/ppa.html">Principles of
+Program Analysis</a> (PPA).</p>
 
 <hr />
 
 <h3>Time Management</h3>
 
 <p>
-This is a 12-unit course, and it is our intention to manage it so that
+This is a 12-unit course, and it is my intention to manage it so that
 you spend close to 12 hours a week on the course, on average. In
 general, 4 hours/week will be spent in class and 8 hours on
 assignments. Please feel free to give the course staff feedback
@@ -141,47 +187,35 @@ on how much time the course is taking for you.
 
 <h3 id="late-work">Late Work Policy</h3>
 <p>
-We understand that normal life events, including projects and exams in other
-courses and technical difficulties out of your control, can interfere with 
-your ability to complete your work on time. 
-Our philosophy is that our late work policy includes built-in 
-flexibility but that the policy will be uniformly applied to all students
-in all circumstances.
-Exceptions to this policy will be made only in extraordinary circumstances,
-almost always involving a family or medical emergency with 
-your academic advisor or the Dean of Student Affairs requesting the 
-exception on your behalf.  
+I understand that normal life events, including projects and exams in other
+courses and technical difficulties out of your control, can interfere with your
+ability to complete your work on time.  My philosophy is that our late work
+policy includes built-in flexibility. I make exceptions to this policy only in
+extraordinary circumstances, almost always involving a family or medical
+emergency.  I encourage you to work with your academic advisor or the Dean of
+Student Affairs to request such exceptions on your behalf (with any of your
+instructors, not just me!).
 </p>
 
 <p>
-For most homework deadlines you may turn in your work up to five days late
-using (1) free late days (see below) or (2) 10% per day penalties.
-<strong>Work turned in more than five days late will receive feedback but no 
-credit, i.e., a 100% penalty.</strong>
-</p>
-
-
-<p>
-Each student starts the semester with <strong>five free late days</strong>
-which will automatically be applied to your
-assignments until you have used all five free late days.  A late day is
-automatically applied when your work is late; you may not 
-defer a free late day to be used on a later assignment.
-</p>
-
+For most homework deadlines, you may turn in your work up to five days late. You
+begin the semester with <strong>five free late days</strong>.  These are
+automatically applied to late assignments until they are all expended.  You
+cannot defer a free late day from one assignment to another.  Once late days are
+expended, a 10% (full letter grade) penalty applies per-day.  Work turned in
+more than five days late will receive feedback but no credit, i.e., a 100%
+penalty, regardless of late day application/availability.</p>
 <hr />
 
 <h3 id="collaboration">Collaboration Policy</h3>
 
-We expect that your work on assignments, projects, and exams will be
-your own work.
-Thus, you may not copy any part of a solution to a problem that was
-written by another student, or was developed together with another
-student, or was copied from another unauthorized source such as the
-Internet. You may not look at another student's solution, even if
-you have completed your own, nor may you knowingly give your solution
-to another student or leave your solution where another student can see
-it.
+We expect that your work on individual assignments, projects, and exams will be
+your own work.  Thus, you may not copy any part of a solution to a problem that
+was written by another student, or was developed together with another student,
+or was copied from another unauthorized source such as the Internet. You may not
+look at another student's solution, even if you have completed your own, nor may
+you knowingly give your solution to another student or leave your solution where
+another student can see it.
 </p>
 
 <p>
@@ -242,19 +276,27 @@ clarification.
 
 <h3>Electronics Policy</h3>
 
-<p>Educational research indicates that the use of electronic devices in typical classroom situations detracts from learning.  Thus, to enhance your learning and that of others in the class, and to encourage active class participation, we generally do not allow the use of electronic devices during lectures.  If you have a working style that relies on electronic devices, or need to use them for some other reason, please talk with the instructors.
+<p>Educational research indicates that the use of electronic devices in typical
+classroom situations detracts from learning.  Thus, to enhance your learning and
+that of others in the class, and to encourage active class participation, we
+generally do not allow the use of electronic devices during lectures.  I make
+exceptions by request (no reason/explanation required), but ask that those who
+use electronics ensure they stay focused on course materials.
 
-<p> Many of the recitation exercises rely on laptops, so we encourage students to bring their laptops to recitation section.
+<p> Many of the recitation exercises rely on laptops, so we encourage students
+to bring their laptops to recitation section.
 
 <hr />
 
-<h3 id="collaboration">Accommodations</h3>
+<h3 id="accomodations">Accommodations</h3>
 
 <p>If you have a disability and require
 accommodations, please contact Catherine Getchell, Director of Disability Resources, 412-268-6121,
-<a href="mailto:getchell@cmu.edu">getchell@cmu.edu</a>. If you have an accommodations letter from the Disability Resources office, I encourage
-you to discuss your accommodations and needs with me as early in the semester as possible. I will work
-with you to ensure that accommodations are provided as appropriate.</p>
+<a href="mailto:getchell@cmu.edu">getchell@cmu.edu</a>. If you have an
+accommodations letter from the Disability Resources office, I encourage you to
+discuss your accommodations and needs with me as early in the semester as
+possible. I will work with you to ensure that accommodations are provided as
+appropriate.</p>
 
 <hr />
 
