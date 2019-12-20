@@ -1,0 +1,415 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <title>17-355/17-665/17-819: Program Analysis</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  <script>
+    function toggle() { document.getElementById("navigation").classList.toggle("hidden"); document.getElementsByTagName("body")[0].classList.toggle("push"); }
+  </script>
+    <meta content="Jonathan Aldrich" name="author">
+    <meta content="17-355/17-665/17-819: Program Analysis" name="description">
+  </head>
+  <body>
+<nav id="navigation" class="hidden">
+  <div class="container">
+    <div class="course-semester">
+      <div class="course"><a href="http://www.cs.cmu.edu/~aldrich/courses/17-355-18sp/">17-355/17-665/17-819</a></div>
+      <div class="semester">Spring 2018</div>
+    </div>
+    <div id="hamburger" onclick="toggle()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <ul>
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="syllabus.html">Syllabus</a></li>
+      <li onclick="toggle()"><a href="index.html#schedule">Schedule</a></li>
+      <li><a href="https://canvas.cmu.edu/courses/3885">Canvas</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header id="top" class="container">
+  <h1>17-355/17-665/17-819 Program Analysis</h1>
+</header>
+
+<div id="main" class="container">
+
+  <div class="cf">
+      <p>Class Tu/Th 9:00 - 10:20 a.m. in <abbr title="Porter Hall">PH</abbr> A18B<br />
+      Recitation F 9:30 - 10:20 a.m. in <abbr title="Gates Hillman Center">GHC</abbr> 4211<br />
+      Spring 2018<br />
+      12 units</p>
+      Professors <strong><a href="http://www.cs.cmu.edu/~aldrich/">Jonathan Aldrich</a></strong> and <strong><a href="https://clairelegoues.com/">Claire Le Goues</a></strong><br />
+      aldrich and clegoues at cs dot cmu dot edu<br />
+      <abbr title="Wean Hall">WEH</abbr> 4216 and 5117<br />
+      Office hours, Le Goues: Wed, 2:30-3:30, or by appointment<br />
+      Office hours, Aldrich: Thu, 2-3pm, or by appointment<br />
+      <!-- TODO: Office hour:  -->
+      For appointments outside of office hours, email the instructor.
+  </div>
+
+  <h2>Course Description</h2>
+  <p>This course covers both foundations and practical aspects of the automated analysis of programs, which is becoming increasingly critical to find software errors and assure program correctness.  The theory of abstract interpretation captures the essence of a broad range of program analyses and supports reasoning about their correctness.  Building on this foundation, the course will describe program representations, data flow analysis, alias analysis, interprocedural analysis, dynamic analysis, and symbolic execution.  Through assignments and projects, students will design and implement practical analysis tools that find bugs and verify properties of software.</p>
+
+<p><b>New:</b> For 2018, this course fulfills the <b>Logic and Languages constrained elective category</b> for the Computer Science major.</p>  
+
+    <h3><span style="color:brown">Why take this course?</span></h3>
+    <ul>
+      <li><b>Explore the meaning of programs.</b>  One of the most basic questions that programmers ask is "What does this program do?"  Program analysis is all about understanding programs--automatically!</li>
+      <li><b>Learn deep theory.</b>  The theory of abstract interpretation stands with type theory as the most important and beautiful foundations of programming languages.  Abstract interpretation is the fundamental theory of abstraction: how to precisely relate the concrete execution of a program to an abstraction of that execution.  Naturally, this has many applications, which brings us to the third reason to take this course:</li>
+      <li><b>Build awesome tools.</b>  Using program analysis, you can build tools that find bugs, prove important security and correctness properties, automatically generate useful tests, and much more--and you'll have a chance to do all of this in course assignments and a project that you can design yourself (if you want).</li>
+    </ul>
+
+  <h3>Course Syllabus and Policies</h3>
+  The <a href="syllabus.html">syllabus</a> covers course learning objectives, supplemental textbooks, assessments, late work policy, and policies.
+
+<!--
+  LINK NOTES TO LECTURE TOPIC
+  EXAMPLES OF HOMEWORK TAGS:
+	<span class="hw">reading</span> Larman ch. 14 and 16<br>
+	<span class="hw">hw1</span> Intro to design, course infrastructure
+-->
+  <section id="schedule">
+    <h2>Schedule</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px;">Date</th>
+          <th>Topic and Notes</th>
+          <th>Additional Reading or Code</th>
+          <th>Assignments Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Jan 16</td>
+          <td>Introduction, Program Representation, and Syntactic Analysis <br>(<a href="notes/notes01-representation.pdf">notes</a>, <a href="notes/slides01-intro.pdf">slides</a>, <a href="notes/exercises01-intro.pdf">in-class exercises</a>)</td>
+
+          <td>PPA ch. 1 (optional)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Jan 18</td>
+          <td>Program Semantics<br>
+	  (<a href="notes/notes02-semantics.pdf">notes</a>,  <a href="notes/exercises02-semantics.pdf">in-class exercises</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Jan 19</td>
+          <td><span class="rec">Recitation</span>Syntactic Analysis in Soot</td>
+          <td><a href=resources/17-355.zip>17-355-lab-1.zip</a></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Jan 23</td>
+          <td>Dataflow Analysis and Abstract Interpretation<br>
+	    (<a href="notes/notes03-dataflow-frameworks.pdf">notes</a>, <a href="notes/exercises03-df.pdf">in-class exercises</a>)	    
+	  </td>
+          <td>PPA ch. 2 (optional)<br/>
+          <a href="notes/03-sources.zip"></a></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Jan 25</td>
+          <td>Dataflow Analysis and Abstract Interpretation, continued (<a href="notes/exercises04-df.pdf">in-class exercises</a>)</td>
+          <td>PPA ch. 6 (optional)</td>
+          <td><span class="hw">hw1</span> <a href="resources/hw1.pdf">hw1.pdf</a>, <a href="resources/hw1.zip">hw1.zip</a></td>
+        </tr>
+        <tr>
+          <td>Jan 26</td>
+          <td><span class="rec">Recitation</span>Semantics</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Jan 30</td>
+          <td>Dataflow Analysis examples (<a href="notes/notes04-dataflow-examples.pdf">notes</a>, <a href="notes/exercises05-examples.pdf">in-class exercises</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 1</td>
+          <td>Dataflow Analysis examples (continued)</td>
+          <td></td>
+          <td><span class="hw">hw2</span> <a href="resources/hw2.pdf">hw2.pdf</a>, <a href="resources/mathpartir.zip">mathpartir.zip</a></td>
+        </tr>
+        <tr>
+          <td>Feb 2</td>
+          <td><span class="rec">recitation</span>Specifying Dataflow Analysis</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Feb 6</td>
+          <td>Dataflow Analysis termination and complexity (<a href="notes/notes05-dataflow-correctness.pdf">notes</a>, <a href="notes/exercises07-soundness.docx">in-class-exercises</a>)</td>
+          <td>PPA ch. 4 (optional)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 8</td>
+          <td>Widening and collecting (<a href="notes/notes06-widening-collecting.pdf">notes</a>)</td>
+          <td></td>
+          <td><span class="hw">hw3</span> <a href="resources/hw3.pdf">hw3.pdf</a></td>
+        </tr>
+        <tr>
+          <td>Feb 9</td>
+          <td><span class="rec">Recitation</span>Implementing dataflow analysis</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Feb 13</td>
+          <td>Interprocedural analysis (<a href="http://www.cs.cmu.edu/~aldrich/courses/17-355-17sp/notes/07-interprocedural.pdf">notes</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 15</td>
+          <td>Context-sensitive interprocedural analysis (notes are continued)</td>
+          <td></td>
+          <td><span class="hw">hw4</span> <a href="resources/hw4.pdf">hw4.pdf</a>, <a href="resources/hw4.zip">hw4.zip</a></td>
+        </tr>
+        <tr>
+          <td>Feb 16</td>
+          <td><span class="rec">Recitation</span>Proving analyses correct</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Feb 20</td>
+          <td>Pointer analysis (<a href="http://www.cs.cmu.edu/~aldrich/courses/17-355-17sp/notes/notes08-pointers.pdf">notes</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 22</td>
+          <td>OO Call Graph Construction (<a href="http://www.cs.cmu.edu/~aldrich/courses/17-355-17sp/notes/notes09-callgraph.pdf">notes</a>)</td>
+          <td></td>
+          <td><span class="hw">hw5</span> <a href="resources/hw5.pdf">hw5.pdf</a></td>
+        </tr>
+        <tr>
+          <td>Feb 23</td>
+          <td><span class="rec">Recitation</span>Interprocedural analysis in Soot</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Feb 27</td>
+          <td>Control Flow Analysis (<a href="http://www.cs.cmu.edu/~aldrich/courses/17-355-17sp/notes/notes10-functional-cfa.pdf">notes</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 1</td>
+          <td>Hoare Logic (<a href="notes/notes11-hoare-logic.pdf">notes</a>)</td>
+          <td></td>
+          <td><span class="hw">hw6 checkpoint due</span> <a href="resources/hw6.pdf">hw6.pdf</a></td>
+        </tr>
+        <tr>
+          <td>Mar 2</td>
+          <td><span class="rec">Recitation</span>Midterm review</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Mar 6</td>
+          <td>Hoare Logic</td>
+          <td></td>
+          <td><span class="hw">full hw6 due</span></td>
+        </tr>
+        <tr class="midterm">
+          <td>Mar 8</td>
+          <td>Midterm Exam</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 9</td>
+          <td><span class="rec">no recitation</span>Mid-Semester Break</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <!-- Spring Break is Mar 13-17 -->
+        <tr>
+          <td>Mar 20</td>
+          <td>Satisfiability Modulo Theories (<a href="notes/notes12-dpll-smt.txt">notes</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 22</td>
+          <td><a href="notes/"></a>Program synthesis (<a href="notes/notes13-synthesis.pdf">notes</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 23</td>
+          <td><span class="rec">recitation</span> SMT solvers</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Mar 27</td>
+          <td>Guest lecture: Analysis at Facebook</td>
+          <td></td>
+          <td><span class="hw">hw7</span> <a href="resources/hw7.pdf">hw7.pdf</a></td>
+        </tr>
+        <tr>
+          <td>Mar 29</td>
+          <td><a href="notes/"></a>Program synthesis, continued</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 30</td>
+          <td><span class="rec">Recitation</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Apr 3</td>
+          <td>Symbolic execution (<a href="notes/notes14-symbolic-execution.pdf">notes</a>)</td>
+          <td>Optional reading: <a href="http://www.cs.colorado.edu/~bec/papers/pldi10-mix.pdf">Mixing Type Checking and Symbolic Execution</a></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 5</td>
+          <td>Concolic execution and test generation (<a href="notes/notes15-concolic-testing.pdf">notes</a>, <a href="notes/slides15-prefix.pdf">slides on Prefix</a>)</td>
+          <td></td>
+          <td><span class="hw">hw8</span> <a href="resources/hw8.pdf">hw8.pdf</a></td>
+        </tr>
+        <tr>
+          <td>Apr 6</td>
+          <td><span class="rec">Recitation</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Apr 10</td>
+          <td>Model Checking (<a href="http://www.cs.cmu.edu/~emc/papers/Invited%20Conference%20Articles/Model%20Checking.pdf">notes by Clarke et al.</a>, <a href="notes/slides16-model-checking.pdf">slides</a>)</td>
+          <td></td>
+          <td><a href="resources/project.pdf"><span class="hw">project</span> proposal due</a></td>
+        </tr>
+        <tr>
+          <td>Apr 12</td>
+          <td><a href="notes/"></a>Counterexample-Guided Abstraction Refinement in Blast (<a href="notes/slides17-blast.pdf">slides</a>)</td>
+          <td><a href="http://pub.ist.ac.at/~tah/Publications/checking_memory_safety_with_blast.pdf">Checking Memory Safety with Blast</a></td>
+          <td><span class="hw">hw9</span> <a href="resources/hw9.pdf">hw9.pdf</a></td>
+        </tr>
+        <tr>
+          <td>Apr 13</td>
+          <td><span class="rec">Recitation</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Apr 17</td>
+          <td>Program Repair</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 19</td>
+          <td>No lecture: Spring Carnival</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 20</td>
+          <td><span class="rec">no recitation</span>Spring Carnival</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>Apr 24</td>
+          <td>Program Repair</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 26</td>
+          <td>Declarative Program Analysis (<a href="notes/slides20-declarative.pdf">slides</a>)</td>
+          <td><a href="https://yanniss.github.io/doop-oopsla09prelim.pdf">Strictly Declarative Specification of Sophisticated Points-to Analyses</a></td>
+          <td><span class="hw">Project</span> checkpoint due</td>
+        </tr>
+        <tr>
+          <td>Apr 27</td>
+          <td><span class="rec">Recitation</span>Datalog/Prolog</td>
+          <td>Datalog/Prolog</td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr>
+          <td>May 1</td>
+          <td>Separation Logic</td>
+          <td><a href="http://www0.cs.ucl.ac.uk/staff/p.ohearn/papers/Marktoberdorf11LectureNotes.pdf">Primer on Separation Logic</a></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 3</td>
+          <td>Dynamic Analysis for Data Race Detection (<a href="notes/slides22-data-race-detection.pdf>slides</a>)</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 4</td>
+          <td><span class="rec">No Recitation</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+        <tr class="final">
+          <td>Finals week</td>
+          <td>Project presentations</td>
+          <td></td>
+          <td><span class="hw">Project</span> presentations</td>
+        </tr>
+        <tr>
+          <td>May 11</td>
+          <td></td>
+          <td></td>
+          <td><span class="hw">project</span> final report due</td>
+        </tr>
+        <!-- End Week -->
+		
+      </tbody>
+    </table>
+  </section>  
+  
+</div id="main" class="container">
+  </body>
+</html>
