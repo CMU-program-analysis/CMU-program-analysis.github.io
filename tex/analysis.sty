@@ -1,0 +1,125 @@
+\NeedsTeXFormat{LaTeX2e}
+
+\usepackage{palatino}
+\usepackage{latexsym}
+\usepackage{verbatim}
+\usepackage{alltt}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{enumitem}
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath,proof,amsthm,amssymb,enumerate}
+\usepackage{color}
+\usepackage{tabularx}
+\usepackage{subcaption}
+\usepackage{tkz-graph}
+\usepackage{algpseudocode}
+
+\newcommand{\question}[2]
+  {\bigskip \noindent
+  {\bf Question \arabic{qnum}}, {#1}, {\it(#2 points).}
+  \addtocounter{qnum}{1}
+  }
+
+\newcommand{\extracreditquestion}[3]
+  {\bigskip \noindent
+   {\bf Question #1} {#2}{(#3 points EXTRA CREDIT).}}
+
+\newcommand{\definition}[2]
+  {\bigskip
+   \begin{tabular}{p{1.5in}p{4.0in}}
+        \textbf{#1} & #2 \\
+        \end{tabular}
+  }
+
+\def\prop{\textsf{\,\,prop}}
+\def\thm{\textsf{\,\,thm}}
+\def\implies{\Rightarrow}
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newcommand{\pfalse}{\mbox{false}}
+\newcommand{\ptrue}{\mbox{true}}
+\newcommand{\pand}{\mbox{and}}
+\newcommand{\por}{\mbox{or}}
+\newcommand{\pskip}{\mbox{skip}}
+\newcommand{\pif}{\mbox{if}}
+\newcommand{\pthen}{\mbox{then}}
+\newcommand{\pelse}{\mbox{else}}
+\newcommand{\pdo}{\mbox{do}}
+\newcommand{\pwhile}{\mbox{while}}
+\def\WhileLang{\textsc{While}\xspace}
+\def\WhileThAddr{\textsc{While3Addr}\xspace}
+
+\newcommand{\lfalse}{\texttt{\textbf{false}}}
+\newcommand{\ltrue}{\texttt{\textbf{true}}}
+
+\def\Natural{\mathbb{N}}
+\def\Integer{\mathbb{Z}}
+\def\prop{\textsf{\,\,prop}}
+\def\thm{\textsf{\,\,thm}}
+\def\implies{\Rightarrow}
+
+
+\newcommand{\exercise}[1]
+  {\bigskip \noindent
+   {\bf Exercise #1}.}
+
+\newcommand{\minisec}[1]
+  {\bigskip \noindent
+   {\bf #1.}}
+
+
+\newcommand{\join}{\sqcup}
+\newcommand{\meet}{\sqcap}
+\newcommand{\alap}{\sqsubseteq}
+
+\newcommand{\parg}[1] % program argument
+  {\ldbrack #1 \rdbrack}
+
+\newcommand{\todo}[1] % something to consider doing in the next round of the course
+  {}
+
+
+
+\newcommand{\printanswer}[1]
+  {}   % use {#1} to print answers, {} to omit them
+
+\newcommand{\answer}[2]
+  {\bigskip \printanswer{\noindent
+   {\bf Sample Answer #1}. #2 \bigskip}}
+
+
+
+\def\tablespace{\vspace{2ex}}
+
+\definecolor{dkgreen}{rgb}{0,0.5,0}
+\definecolor{dkred}{rgb}{0.5,0,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+
+\lstdefinestyle{javastyle} {
+language=Java,
+basicstyle=\ttfamily,
+  morekeywords={virtualinvoke},
+  keywordstyle=\color{blue},
+  ndkeywordstyle=\color{red},
+  commentstyle=\color{dkred},
+  stringstyle=\color{dkgreen},
+  numbers=none,
+  breaklines=true,
+  numberstyle=\ttfamily\footnotesize\color{gray},
+  stepnumber=1,
+  numbersep=10pt,
+  backgroundcolor=\color{white},
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+%  xleftmargin=.23in
+}
+\lstset{style=javastyle}

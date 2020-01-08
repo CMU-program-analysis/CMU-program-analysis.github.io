@@ -1,0 +1,215 @@
+\documentclass[11pt]{article}
+\usepackage{../../tex/analysis}
+\usepackage{../../tex/math-cmds}
+
+\title{Lecture Notes: The \WhileLang Language and Program Semantics}
+\author{17-355/17-665/17-819: Program Analysis (Spring 2020)\\
+        Claire Le Goues\footnote{These notes were developed together with Jonathan Aldrich}\\
+		{\tt clegoues@cs.cmu.edu}
+        }
+\date{}
+\begin{document}
+
+\maketitle
+
+\section{The \textsc{While} Language}
+
+We will begin our study of the theory of analyses using a simple programming language called
+\WhileLang, with various extensions.  The \WhileLang language is at least as old as
+Hoare's 1969 paper on a logic for proving program properties.  It is a simple
+imperative language, with (to start!) assignment to local variables, if
+statements, while loops, and simple integer and boolean expressions.
+
+We use the following metavariables to describe different categories of syntax.
+The letter on the left will be used as a variable representing a piece of a
+program. On the right, we describe the kind of program piece that variable
+represents:
+
+\[
+\begin{array}{ll}
+S   & \mbox{statements}\\
+a   & \mbox{arithmetic expressions (AExp)}\\
+x,y & \mbox{program variables (Vars)} \\
+n   & \mbox{number literals}\\
+P   & \mbox{boolean predicates (BExp)}\\
+\end{array}
+\]
+
+The syntax of \WhileLang is shown below.  Statements $S$ can be an assignment $x :=
+a$; a skip statement, which does nothing;\footnote{Similar to a lone semicolon
+  or open/close bracket in C or Java} and \texttt{if} and \texttt{while}
+statements, with boolean predicates $P$ as conditions.  Arithmetic expressions
+$a$ include variables $x$, numbers $n$, and one of several arithmetic operators
+($op_a$).  Predicates are represented by Boolean expressions that include true, false, the negation of another
+Boolean expression, Boolean operators $op_b$ applied to other Boolean
+expressions, and relational operators $op_r$ applied to arithmetic expressions.
+
+\newcommand\df{\bnfdef}
+\newcommand\da{\bnfalt}
+\newcommand\skips{\mbox{skip}}
+\newcommand\ifs{\mbox{if}~ P ~\mbox{then}~ S_1 ~\mbox{else}~ S_2}
+\newcommand\whiles{\mbox{while}~ P ~\mbox{do}~ S}
+
+
+\[
+\begin{array}{llllllllllll}
+S & \df & x := a    & P & \df & \mbox{true}    & a & \df & x  & op_b & \df & \mbox{and} \da \mbox{or} \\
+  & \da & \skips    &   & \da & \mbox{false}   &   & \da & n   & op_r & \df & <~ \da ~\le~ \da ~= \\
+  & \da & S_1;~ S_2 &   & \da & \mbox{not}~ P  &   & \da & a_1 ~op_a~ a_2   & & \da & >~ \da ~\ge~ \\ 
+  & \da & \ifs      &   & \da & P_1 ~op_b~ P_2 &   &     &            & op_a & \df & + \da - \da * \da /  \\
+  & \da & \whiles   &   & \da & a_1 ~op_r~ a_2 \\[2ex] 
+\end{array}
+\]
+
+\clearpage
+\section{\textsc{While3Addr}: A Representation for Analysis}
+
+For analysis, the source-like definition of \WhileLang can sometimes prove
+inconvenient.  For example, \WhileLang has three separate syntactic
+forms---statements, arithmetic expressions, and boolean predicates---and we
+would have to define the semantics and analysis of each separately to reason about it.  A
+simpler and more regular representation of programs will help simplify certain
+of our formalisms.
+
+As a starting point, we will eliminate recursive arithmetic and boolean
+expressions and replace them with simple atomic statement forms, which are
+called \textit{instructions}, after the assembly language instructions that they
+resemble.  For example, an assignment statement of the form $w = x*y+z$ will be
+rewritten as a multiply instruction followed by an add instruction.  The
+multiply assigns to a temporary variable $t_1$, which is then used in the
+subsequent add:
+
+\[
+\begin{array}{l}
+t_1 = x * y \\
+w = t_1 + z
+\end{array}
+\]
+
+As the translation from expressions to instructions suggests, program analysis
+is typically studied using a representation of programs that is not only
+simpler, but also lower-level than the source (\WhileLang, in this instance)
+language.  Many Java analyses are actually conducted on byte code, for example.
+Typically, high-level languages come with features that are numerous and
+complex, but can be reduced into a smaller set of simpler primitives.  Working
+at the lower level of abstraction thus also supports simplicity in the compiler.
+
+Control flow constructs such as \texttt{if} and \texttt{while} are similarly
+translated into simpler jump and conditional branch constructs
+that jump to a particular (numbered) instruction.  For example, a statement of
+the form \texttt{if} $P$ \texttt{then} $S_1$ \texttt{else} $S_2$ would be
+translated into:
+
+\[
+\begin{array}{ll}
+1: & \mbox{if}~P~\mbox{then goto}~4\\
+2: & S_2\\
+3: & \mbox{goto}~5\\
+4: & S_1\\
+\end{array}
+\]
+
+\exercise{1} How would you translate a \textsc{While} statement of the form \texttt{while} $P$ \texttt{do} $S$?
+
+%The translation of a statement of the form \texttt{while} $P$ \texttt{do} $S$ is similar:
+%
+%\[
+%\begin{array}{ll}
+%1: & \mbox{if not}~P~\mbox{goto}~4\\
+%2: & S\\
+%3: & \mbox{goto}~1\\
+%4: & \textit{rest of program...}\
+%\end{array}
+%\]
+
+\vspace{1em}
+
+This form of code is often called 3-address code, because every instruction has
+at most two source operands and one result operand.
+%
+We now define the syntax for 3-address code produced from the \WhileLang language,
+which we will call \WhileThAddr.  This language consists of a set of simple
+instructions that load a constant into a variable, copy from one variable to
+another, compute the value of a variable from two others, or jump (possibly
+conditionally) to a new address $n$.  A program $P$ is just a map from addresses
+to instructions:\footnote{The idea of the mapping between numbers and
+  instructions maps conceptually to Nielsens' use of \emph{labels} in the
+  \WhileLang language specification in the textbook.  This concept is akin to mapping
+  line numbers to code.}
+
+\[
+\begin{array}{llllll}
+I & \bnfdef & x := n & op & \bnfdef & + \bnfalt - \bnfalt * \bnfalt / \\
+  & \bnfalt & x := y & op_r & \bnfdef & <~ \bnfalt ~=~  \\
+  & \bnfalt & x := y ~op~ z & P & \in & \Natural \rightarrow I\\
+  & \bnfalt & \mbox{goto}~n \\
+  & \bnfalt & \mbox{if}~x~op_r~0~\mbox{goto}~n \\[1ex]
+\end{array}
+\]
+
+Formally defining a translation from a source language such as
+\WhileLang to a lower-level intermediate language such as \WhileThAddr is possible,
+but more appropriate for the scope of a compilers course.  For our purposes, the
+above should suffice as intuition.  We will formally define the semantics of
+\WhileThAddr in subsequent lectures.
+
+\section{Extensions}
+
+The languages described above are sufficient to introduce the fundamental concepts of program
+analysis in this course. However, we will eventually examine various extensions to \WhileLang and
+\WhileThAddr, so that we can understand how more complicated constructs in real languages can
+be analyzed. Some of these extensions to \WhileThAddr will include:
+
+\[
+\begin{array}{llll}
+I & \bnfdef & \ldots \\
+  & \bnfalt & x := f(y) & \textit{function call} \\
+  & \bnfalt & \mbox{return}~x & \textit{return} \\
+  & \bnfalt & x := y.m(z) & \textit{method call} \\
+  & \bnfalt & x := \&p & \textit{address-of operator} \\
+  & \bnfalt & x := *p & \textit{pointer dereference} \\
+  & \bnfalt & *p := x & \textit{pointer assignment} \\
+  & \bnfalt & x := y.f & \textit{field read} \\
+  & \bnfalt & x.f := y & \textit{field assignment} \\
+  
+\end{array}
+\]
+
+We will not give semantics to these extensions now, but it is useful to be aware of them as you
+will see intermediate code like this in practical analysis frameworks.
+
+
+
+\section{Control flow graphs}
+
+Many program analysis tools and techniques work on a representation of code known as a
+\textit{control-flow graph} (CFG), which is a graph-based representation of the
+flow of control through the program.  It connects simple instructions in a way
+that statically captures all possible execution paths through the program and
+defines the execution order of instructions in the program.  When control could
+flow in more than one direction, depending on program values, the graph
+branches.  An example is the representation of an \texttt{if} or \texttt{while}
+statement.  At the end of the instructions in each branch of an \texttt{if}
+statement, the branches merge together to point to the single instruction that
+comes afterward.  Historically, this arises from the use of program analysis to
+optimize programs.
+
+More precisely, a control flow graph consists of a set of nodes and edges. The
+nodes $\mathcal{N}$ correspond to \textit{basic blocks}: Sequences of program
+instructions with no jumps in or out (no gotos, no labeled targets).  The edges
+$\mathcal{E}$ represent the flow of control between basic blocks.  We use
+\textit{Pred(n)} to denote the set of all predecessors of the node \textit{n},
+and \textit{Succ(n)} the set of all successors.  A CFG has a start node, and a
+set of final nodes, corresponding to return or other termination of a function.
+Finally, for the purposes of dataflow analysis, we say that a \emph{program
+  point} exists before and after each node.  Note that there exists considerable
+flexibility in these definitions, and the precision of the representation can
+vary based on the desired precision of the resulting analysis as well as the
+peculiarities of the language.  In this course, we will in fact often ignore the
+concept of a basic block and just treat instructions as the nodes in a graph; this
+view is semantically equivalent and simpler, but less efficient in practice.
+Further defining and learning how to construct
+CFGs is a subject best left to a compilers course; this discussion should suffice
+for our purposes.
+
+\end{document}
