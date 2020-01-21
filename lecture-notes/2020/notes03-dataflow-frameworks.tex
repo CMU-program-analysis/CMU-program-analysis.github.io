@@ -185,9 +185,9 @@ To demonstrate, consider the following simple program (left), with its control f
 \begin{tabular}{r | c c c}
   & x & y & z \\
 \hline
-P1 & ?? & ?? & ?? \\
-P2 & Z & ??  & ?? \\
-P3 & Z & N & ?? \\
+P1 & ? & ? & ? \\
+P2 & Z & ?  & ? \\
+P3 & Z & N & ? \\
 P4 & Z & N & N\\
 P5 & Z & N & N\\
 P6 & $\top$ & N & N\\
@@ -196,14 +196,13 @@ P6 & $\top$ & N & N\\
 \end{center}
 % ok you can open them again
 
-For such simple code, it is easy to track the analysis information using a table with a
+For such simple code, we can track analysis information using a table with a
 column for each program variable and a row for each program point (right,
-above). The value in the cell is that variable's abstract value, according to
-the analysis, at that program point.
+above). 
 
 The first thing to notice is that, because flow functions operate on the
 abstract state for the program point immediately before a node, we need some
-kind of \emph{initial} assumption (this confusion is illustrated by the ?? in
+kind of \emph{initial} assumption (this confusion is illustrated by the ? in
 the cells of the table).  We will return to this point in a moment, since those
 values don't influence the analysis for such simple, straight-line code. 
 
@@ -225,7 +224,7 @@ compute quite useful information.
 Things get more interesting in \WhileThAddr code that contains \texttt{if}
 statements.  An \texttt{if} statement introduces two possible paths through the
 program. 
-Consider the following simple example (left), and its CFG (middle).  I will
+Consider the following simple example (left), and its CFG (middle).  We will
 begin by analyzing the first node as though the branch is not taken:
 
 \begin{center}
@@ -241,19 +240,19 @@ begin by analyzing the first node as though the branch is not taken:
 \end{array}
 \]
 \end{minipage}
-\hspace*{1em}% \hspace whatever for space between
+%\hspace*{1em}% \hspace whatever for space between
 \includegraphics[scale=0.75]{images/df-notes-if1}
-\hspace*{1em}
+%\hspace*{1em}
 \begin{minipage}[t][-9.7em][b]{0.30\textwidth} % toggle vertical alignment of table
 \begin{tabular}{r | c c c}
   & x & y & z \\
 \midrule
-P1 & ??  & ??  & ??
-P2 & $N_F$ & ?? & ??  \\
-P3 & N & Z & ??  \\
-P4 & N & Z & ?? \\
+P1 & ?  & ?  & ? \\
+P2 & $N_F$ & ? & ?  \\
+P3 & N & Z & ?  \\
+P4 & N & Z & ? \\
 P5 &   &   &  \\
-P6 & N?  & Z?   & ???  \\
+P6 & N?  & Z?   & ??  \\
 P7 & N?? & Z?? & Z?? \\
 \end{tabular}
 \end{minipage}
@@ -272,7 +271,7 @@ We have not yet analyzed a path through lines 4 and 5.  The table shows the
 (questionable) values if we just use the state coming from P4 as ``incoming'' at
 instruction 6, and ignore what might have happened along that other path. 
 
-Soldiering on, perhaps turning to that alternative path, will give answers.  
+Perhaps turning to that alternative path, will give answers.  
 Let's analyze instructions 4 and 5 as if we had taken the
 true branch at instruction 1:
 
@@ -320,12 +319,12 @@ The corrected analysis, showing the \emph{combined} state at P6, looks like:
 \begin{tabular}{r | c c c l}
   & x & y & z \\
 \hline
-P1 & ?? & ?? & ?? \\
-P2 & $Z_T,N_F$ & ??  & ?? \\
-P3 & N & Z & ?? \\
-P4 & N & Z & ?? \\
-P5 & Z & N & ??  \\
-P6 & N & $\top$ & ?? & \textit{combined with P4} \\
+P1 & ? & ? & ? \\
+P2 & $Z_T,N_F$ & ?  & ? \\
+P3 & N & Z & ? \\
+P4 & N & Z & ? \\
+P5 & Z & N & ?  \\
+P6 & N & $\top$ & ? & \textit{combined with P4} \\
 P7 & N & $\top$ & $\top$ & \textit{corrected}\\
 \end{tabular}
 \end{minipage}
@@ -365,7 +364,7 @@ For zero analysis, we define the partial order with $Z \alap \top$ and $N \alap
 \top $, where $Z \join N = \top$.
 
 
-We have now introduced and considered all the elements necessary to define a
+We have now considered all the elements necessary to define a
 dataflow analysis:
 
 \begin{itemize}[labelwidth=0.7em, labelsep=0.6em, topsep=0ex, itemsep=0ex,
@@ -380,17 +379,27 @@ Note that the theory of lattices answers that side question that came up in the
 very first example: what should we assume
 about the value of input variables (the question marks in our example tables)? 
 If we do not know anything about the value $x$ can be,
-a good choice is to assume it can be anything; That is, in the initial
+one good choice is to assume it can be anything. That is, in the initial
 environment $\sigma_0$, variables' initial state is mapped to $\top$.  
+
+Finally, as a small diagram point: in the interest of clarity, we sometimes
+elide program points between nodes when we can. That is, in the example above,
+the state going into instruction 3 is exactly the state coming out of
+instruction 2, so we label a single program point P3.  However, when we need to
+join multiple paths to determine the incoming state at a node, we often
+differentiate the two program points in our CFG diagrams. 
 
 \subsection{Dataflow analysis of loops}
 
-We now consider \textsc{While3Addr} programs with loops.  While an \texttt{if}
-statement produces two paths that diverge and later join, a loop produces an
-potentially unbounded number of program paths.  Despite this, we would like to
-analyze looping programs in bounded time.  Let us examine how through the
-following simple looping example:\footnote{I provide the CFG for reference but omit the annotations in the
-interest of a cleaner diagram.}
+We now consider \textsc{While3Addr} programs with loops. Our intuition above,
+which simply analyzed the two paths induced by the \texttt{if} statement
+separately, no longer works so well.  A loop produces a potentially unbounded
+number of program paths, and we want our analysis to take only bounded
+time. Consider the following simple
+looping example:\footnote{I provide the CFG for reference but omit the
+  annotations in the interest of a cleaner diagram.  Notice that I differentiate
+  P2 and P3 because of the join, as well as P7 and P8,
+  since they don't both come from instruction 6.}
 
 \tablespace
 \begin{center}
@@ -399,108 +408,93 @@ interest of a cleaner diagram.}
 $\begin{array}{ll}
 1: & x := 10\\
 2: & y := 0\\
-3: & z := 0\\
-4: & \mbox{if}~x=0~\mbox{goto}~8\\
-5: & y := 1\\
-6: & x := x - 1\\
-7: & \mbox{goto}~4\\
-8: & x := y\\
+3: & \mbox{if}~x=0~\mbox{goto}~7\\
+4: & y := 1\\
+5: & x := x - 1\\
+6: & \mbox{goto}~3\\
+7: & x := y\\
 \end{array}$
 \end{minipage}
-\hspace*{1em}
+%\hspace*{1em}
 \includegraphics[scale=0.8]{images/loop}
-\hspace*{1em}
+%\hspace*{1em}
 \begin{minipage}[t][-9.7em][b]{0.3\textwidth} % toggle vertical alignment of table
-\begin{tabular}{r | c c c l}
-  & x & y & z \\
+\begin{tabular}{r | c c l}
+  & x & y  \\
 \hline
-1 & N &   &   \\
-2 & N & Z &   \\
-3 & N & Z & Z \\
-4 & $Z_T,N_F$ & Z & Z \\
-5 & N & N & Z \\
-6 & $\top$ & N & Z \\
-7 & $\top$ & N & Z \\
-8 &   &   &   \\
+P0 & $\top$ & $\top$   \\
+P1 & N & $\top$   \\
+P2 & N & Z  &   \\
+P3 & N & Z  & \textit{first time through...}   \\
+P4 & $N_F$ & Z  \\
+P5 & N & N \\
+P6 & $\top$ & N \\
+P7 & $\top$ & N \\
+P8 & $Z_t$ & N  & \textit{first time through...}  \\
+P9 & N  & N &  \textit{first time through...}   \\
 \end{tabular}
 \end{minipage}
 \end{center}
 \tablespace
 
-
 The right-hand side above shows the straightforward straight-line analysis of the path that runs
-the loop once. We must now re-analyze instruction 4.  This
-should not be surprising; it is analogous to the one we encountered
-earlier, merging paths after an \texttt{if} instruction.  To determine the
-analysis information at instruction 4, we join the dataflow analysis information
-flowing in from instruction 3 with the dataflow analysis information flowing in
-from instruction 7.  For $x$ we have $N \join \top = \top$.  For $y$ we have $Z
-\join N = \top$.  For $z$ we have $Z \join Z = Z$.  The information for
-instruction 4 is therefore unchanged, except that for $y$ we now have $\top$.
-
-We can now choose between two paths once again: staying within the loop, or
-exiting out to instruction 8.  We will choose (arbitrarily, for now) to stay
-within the loop, and consider instruction 5.  This is our second visit to
-instruction 5, and we have new information to consider: since we have gone
-through the loop, the assignment $y := 1$ has been executed, and we have to
-assume that $y$ may be nonzero coming into instruction 5.  This is accounted for
-by the latest update to instruction 4's analysis information, in which $y$ is
-mapped to $\top$.  Thus the information for instruction 4 describes both
-possible paths.  We must update the analysis information for instruction 5 so it
-does so as well.  In this case, however, since the instruction assigns $1$ to
-$y$, we still know that $y$ is nonzero after it executes.  In fact, analyzing
-the instruction again with the updated input data does not change the analysis
-results for this instruction.
+the loop exactly once.  Thinking back to our handling of \texttt{if} above, we might now
+reconsider instruction 3, joining the states at P2 and P7 to create a new
+P3. For x, $N \join \top = \top$.  For y, $Z \join N = \top$.
+%
+This changes the incoming values at instruction 3. 
+We can now choose between two paths once again.  We will choose (arbitrarily, for now) to stay
+within the loop, and reconsider instruction 4.  We have new incoming information
+(at P4, where
+both $x$ and $y$ are now $\top$).  But, since instruction 4 assigns $1$ to
+$y$, we still know that $y$ is nonzero at P5. The updated input data does not
+change the analysis results at P5.
 
 A quick check shows that going through the remaining instructions in the loop,
-and even coming back to instruction 4, the analysis information will not change.
+even back to instruction 3, the analysis information will no longer change.
 That is because the flow functions are deterministic: given the same input
 analysis information and the same instruction, they will produce the same output
-analysis information.  If we analyze instruction 6, for example, the input
-analysis information from instruction 5 is the same input analysis information
-we used when analyzing instruction 6 the last time around.  Thus, instruction
-6's output information will not change, and so instruction 7's input information
-will not change, and so on.  No matter which instruction we run the analysis on,
-anywhere in the loop (and in fact before the loop), the analysis information
-will not change.
+analysis information.  
 
 We say that the dataflow analysis has reached a \textit{fixed
-  point}.\footnote{Sometimes abbreviated in one word as fixpoint.} In
+  point} (or fixpoint).  In
 mathematics, a fixed point of a function is a data value $v$ that is mapped to
-itself by the function, i.e. $f(v) = v$.  In this analysis, the mathematical
+itself by the function, i.e., $f(v) = v$.  In analysis, the mathematical
 function is the flow function, and the fixed point is a tuple of the dataflow
 analysis values at each program point.  If
 we invoke the flow function on the fixed point, the analysis results do not
 change (we get the same fixed point back).
 
-Once we have reached a fixed point of the function for this loop, it is clear
-that further analysis of the loop will not be useful.  Therefore, we will
-proceed to analyze statement 8.  The final analysis results are as follows:
+Once we have reached a fixed point for the loop,
+further analysis of the loop will not be useful.  Therefore, we will
+proceed to analyze statement 7.  The final analysis results are as follows:
 
 \tablespace
 \begin{center}
-\begin{tabular}{r | c c c l}
+\begin{tabular}{r | c c l}
 
-  & x & y & z \\
+  & x & y & \\
 \hline
-1 & N &   &   \\
-2 & N & Z &   \\
-3 & N & Z & Z \\
-4 & $Z_T,N_F$ & $\top$ & Z & \textit{updated} \\
-5 & N & N & Z & \textit{already at fixed point} \\
-6 & $\top$ & N & Z & \textit{already at fixed point} \\
-7 & $\top$ & N & Z & \textit{already at fixed point} \\
-8 & Z & $\top$ & Z \\
+P0 & $\top$ & $\top$ & \\
+P1 & N & $\top$ & \\
+P2 & N & Z  &   \\
+P3 & $\top$ & $\top$ &  \textit{join} \\
+P4 & $N_F$ & $\top$ & \textit{updated} \\
+P5 & N & N & \textit{already at fixed point} \\
+P6 & $\top$ & N &  \textit{already at fixed point} \\
+P7 & $\top$ & N & \textit{already at fixed point} \\
+P8 & $Z_T$ & $\top$ &  \textit{updated}  \\
+P9 & $\top$ & $\top$ &  \textit{updated}  \\
 \end{tabular}
 \end{center}
 \tablespace
 
 Quickly simulating a run of the program program shows that these results
 correctly approximate actual execution.  The uncertainty in the value of $x$ at
-instructions 6 and 7 is real: $x$ is nonzero after these instructions, except
+P6 and P7 is real: $x$ \emph{is} nonzero after these instructions, except
 the last time through the loop, when it is zero.  The uncertainty in the value
-of $y$ at the end shows imprecision in the analysis: this loop
-always executes at least once, so $y$ will be nonzero.  However, the analysis
+of $y$ at the end shows analysis imprecision: this loop
+always executes at least once, so $y$ will be nonzero at these points.  However, the analysis
 (as currently formulated) cannot tell this for certain, 
 so it reports that it cannot tell if $y$ is zero or not.  This is
 safe---it is always correct to say the analysis is uncertain---but not as
@@ -512,7 +506,7 @@ our example, we only had to analyze the loop statements at most twice each
 before reaching a fixed point. This is a significant improvement over the actual
 program execution, which runs the loop 10
 times.  We sacrificed precision in exchange for
-coverage of all possible executions, a classic tradeoff in static analysis.
+coverage of all possible executions, a classic tradeoff.
 
 How can we be confident that the results of the analysis are correct, besides
 simulating every possible run of a (possibly very complex) program? The
@@ -531,18 +525,16 @@ We will make this argument more precise in a future lecture.
 
 \subsection{A convenience: the $\bottom$ abstract value and complete lattices}
 
-As we think about defining an algorithm for dataflow analysis more precisely, a
-natural question comes up concerning how instruction 4 is analyzed in the
-example above.  On the first pass, we analyzed it using the dataflow information
-from instruction 3, but on the second pass we had to consider dataflow
-information from both instruction 3 and instruction 7.
+To define an algorithm for dataflow anlaysis more precisely, we need to be more
+concrete about how to compute incoming states for CFG nodes with multiple
+incoming edges (like instruction 3, above).  We've been ignoring these in our
+``one path at a time'' approach so far, but this is a handwave for didactic
+purposes. 
 
-\looseness-1
-It is more consistent to say that analyzing an instruction always uses the
-incoming dataflow analysis information from all instructions that could precede
-it.  That way, we do not have to worry about following a specific
-path during analysis.  However, for instruction 4, this requires a dataflow value from
-instruction 7, even if instruction 7 has not yet been analyzed.  We
+Instead, it is more precise and consistent to say that analyzing an instruction \emph{always} uses the
+incoming dataflow analysis information from \emph{all} instructions that could precede
+it.  However, for instruction 3, this requires a dataflow value from
+instruction 6, even if instruction 6 has not yet been analyzed.  We
 could do this if we had a dataflow value that is always ignored when it is
 joined with any other dataflow value.  In other words, we need a abstract
 dataflow value $\bottom$ (pronounced ``bottom'') such that $\bottom \join l =
@@ -558,8 +550,8 @@ A set of values $L$ that is equipped with a partial order $\alap$, and for which
 both least upper bounds $\join$ and greatest lower bounds $\meet$ exist in $L$
 and are unique, is called a \emph{complete lattice}.
 
-The theory of $\bottom$ and complete lattices provides an elegant solution to
-the problem mentioned above.  We can initialize $\sigma$ at every instruction in
+This provides an elegant solution to
+the problem mentioned above.  We initialize $\sigma$ at every program point in
 the program, except at entry, to $\bottom$, indicating that the instruction
 there has not yet been analyzed.  We can then \emph{always} merge all input
 values to a node, whether or not the sources of those inputs have been analysed,
@@ -595,67 +587,58 @@ basicstyle=\ttfamily,
 }
 \lstset{style=javastyle}
 
-The informal execution strategy outlined above considers all
-paths through the program, continuing until the dataflow analysis information
-reaches a fixed point.  This strategy can be simplified.  The argument for
+
+Our informal strategy above, which considers all paths until the dataflow
+analysis information reaches a fixed point, can be simplified.  The argument for
 correctness outlined above implies that for correct flow functions, it doesn't
-matter how we get to the analysis fixed point.  This is
-sensible: it would be surprising if analysis 
-correctness depended on which branch of an if statement we
-explored first!  It is in fact possible to run the analysis on program
-instructions in any order we choose.  As long as we continue doing so until the
-analysis reaches a fixed point, the final result will be correct.  The simplest
+matter how we get to the analysis fixed point (it would be
+surprising if analysis correctness depended on which branch of an \texttt{if} statement
+we explored first!).  It is in fact possible to run the analysis on program
+instructions in any order we choose.  As long as we continue doing so until a
+reaching a fixed point, the final result will be correct.  The simplest
 correct algorithm for executing dataflow analysis can therefore be stated as
 follows:
 
-%\begin{lstlisting}[mathescape]
-%for Instruction i in program
-%    results[i] = $\bottom$
-%results[startInstruction] = initialDataflowInformation
-%
-%while not at fixed point
-%    pick an instruction i in program
-%	input = join { results[j] | j in predecessors(i) }
-%	output = flow(i, input)
-%	results[i] = output
-%\end{lstlisting}
-
 \begin{lstlisting}[mathescape]
-for Instruction i in program
-    input[i] = $\bottom$
-input[firstInstruction] = initialDataflowInformation
+for Node n in cfg
+    results[n] = $\bottom$
+results[0] = initialDataflowInformation
 
 while not at fixed point
-    pick an instruction i in program
-    output = flow(i, input[i])
-    for Instruction j in sucessors(i)
+    pick a node n in program
+	input = join { results[j] | j in predecessors(n) }
+	output = flow(n, input)
+	results[n] = output
+\end{lstlisting}
+
+Or, equivalently:
+
+\begin{lstlisting}[mathescape]
+for Node n in cfg
+    input[n] = $\bottom$
+input[0] = initialDataflowInformation
+
+while not at fixed point
+    pick a node n in program
+    output = flow(n, input[n])
+    for Node j in sucessors(n)
         input[j] = input[j] $\join$ output
 \end{lstlisting}
 
-Although in the previous presentation we have been tracking the analysis
-information immediately after each instruction, it is more convenient when
-writing down the algorithm to track the analysis information immediately before
-each instruction.  This avoids the need for a distinguished location before the
-program starts (the start instruction is not 
-analyzed).
-
-%When setting the initial dataflow information, we assume there is a
-%distinguished start instruction which does nothing, but whose dataflow results
-%reflect the initial dataflow information. 
-
-In the code above, the termination condition is expressed abstractly.  It can
-easily be checked, however, by running the flow function on each instruction in
-the program.  If the results of analysis do not change as a result of analyzing
-any instruction, then it has reached a fixed point.
+In the code above, the termination condition is expressed abstractly (``not at
+fixed point'').  It can easily be checked by keeping track, when we process each
+node, whether the new results have changed compared to what we previously
+had stored for that node.  If the results do not change for any node, the
+analysis has reached a fix point. 
 
 How do we know the algorithm will terminate?  The intuition is as follows.  We
-rely on the choice of an instruction to be fair, so that each instruction is
+rely on the choice of a node to be fair, so that each node is
 eventually considered.  As long as the analysis is not at a fixed point, some
-instruction can be analyzed to produce new analysis results.  If our flow
+node can be analyzed to produce new results.  If our flow
 functions are well-behaved (technically, if they are monotone, as we will
 discuss in a future lecture) then each time the flow function runs on a given
-instruction, either the results do not change, or they get become more approximate
-(i.e. they are higher in the lattice).  Later runs of the flow function consider
+node, either the results do not change, or they get become more approximate
+(i.e., they are higher in the lattice).  Later runs of the flow function consider
 more possible paths through the program and therefore produce a more approximate
 result which considers all these possibilities.  If the lattice is of finite
 height---meaning there are at most a finite number of steps from any place in
@@ -700,29 +683,29 @@ in pseudocode as:
 % the most natural way to think about things.
 
 \begin{lstlisting}[mathescape]
-for Instruction i in program
-    input[i] = $\bottom$
-input[firstInstruction] = initialDataflowInformation
-worklist = { firstInstruction }
+for Node n in program
+    input[n] = $\bottom$
+input[0] = initialDataflowInformation
+worklist = { firstNode }
 
 while worklist is not empty
-    take an instruction i off the worklist
-    output = flow(i, input[i])
-	for Instruction j in succs(i)
-		if output $\not\alap$ input[j]
+    take a Node n off the worklist
+    output = flow(n, input[n])
+	for Node j in succs(n)
+		if output $\not\alap$ input[n]
 			input[j] = input[j] $\join$ output
 			add j to worklist
 \end{lstlisting}
 
 \noindent The algorithm above is very close to the generic algorithm declared
-previously, except for the worklist that chooses the next instruction to analyze
+previously, except the worklist that chooses the next instruction to analyze
 and determines when a fixed point is reached.
 
 We can reason about the performance of this algorithm as follows.  We only add
-an instruction to the worklist when the input data to some node changes, and the
+a node to the worklist when the input data to it changes. The
 input for a given node can only change $h$ times, where $h$ is the height of the
 lattice.  Thus we add at most $n*h$ nodes to the worklist, where $n$ is the
-number of instructions in the program.  After running the flow function for a
+number of nodes/instructions in the program.  After running the flow function for a
 node, however, we must test all its successors to find out if their input has
 changed.  This test is done once for each edge, for each time that the source
 node of the edge is added to the worklist: thus at most $e*h$ times, where $e$
@@ -750,7 +733,7 @@ information from an earlier loop changes.
 Within each loop, the instructions should be processed in reverse postorder, the
 reverse of the order in which each node is last visited when traversing a tree.
 Consider the example from Section~\ref{sec:if} above, in which instruction 1 is
-an \texttt{if} test, instructions 2-3 are the then branch, instructions 4-5 are
+an \texttt{if} test, instructions 2--3 are the then branch, instructions 4--5 are
 the else branch, and instruction 6 comes after the \texttt{if} statement.  A
 tree traversal might go as follows: 1, 2, 3, 6, 3 (again), 2 (again), 1 (again),
 4, 5, 4 (again), 1 (again).  Some instructions in the tree are visited multiple
@@ -758,7 +741,7 @@ times: once going down, once between visiting the children, and once coming up.
 The postorder, or order of the last visits to each node, is 6, 3, 2, 5, 4, 1.
 The reverse postorder is the reverse of this: 1, 4, 5, 2, 3, 6.  Now we can see
 why reverse postorder works well: we explore both branches of the if statement
-(4-5 and 2-3) before we explore node 6.  This ensures that we do not have to
+(4--5 and 2--3) before we explore node 6.  This ensures that we do not have to
 reanalyze node 6 after one of its inputs changes.
 
 Although analyzing code using the strongly-connected component and reverse
