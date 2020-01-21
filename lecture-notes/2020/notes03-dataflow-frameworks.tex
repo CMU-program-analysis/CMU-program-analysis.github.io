@@ -224,7 +224,14 @@ compute quite useful information.
 Things get more interesting in \WhileThAddr code that contains \texttt{if}
 statements.  An \texttt{if} statement introduces two possible paths through the
 program. 
-Consider the following simple example (left), and its CFG (middle).  We will
+Consider the following simple example (left), and its CFG (middle).\footnote{A
+  point on diagrams: in the interest of clarity, we sometimes
+elide program points between nodes when we can. That is, in this example,,
+the state going into instruction 3 is exactly the state coming out of
+instruction 2, so we label a single program point P3.  However, when we need to
+consider multiple paths to determine the incoming state at a node, we often need
+differentiate the two program points in our CFG diagrams.}
+  We will
 begin by analyzing the first node as though the branch is not taken:
 
 \begin{center}
@@ -252,8 +259,9 @@ P2 & $N_F$ & ? & ?  \\
 P3 & N & Z & ?  \\
 P4 & N & Z & ? \\
 P5 &   &   &  \\
-P6 & N?  & Z?   & ??  \\
-P7 & N?? & Z?? & Z?? \\
+P6 &   &   &  \\
+P7 & N?  & Z?   & ??  \\
+P8 & N?? & Z?? & Z?? \\
 \end{tabular}
 \end{minipage}
 \end{center}
@@ -264,7 +272,7 @@ produced for the false condition on the branch, which is then used as input to
 analyze instruction 2 (and produce the state at P3). We can go right from P3 to
 P4 without any complexity.
 %
-But, if we just continue ``simulating'' execution, we get to P6.  It has \emph{two}
+But, if we just continue ``simulating'' execution, we get to P7.  It has \emph{two}
 possible incoming edges, so two possible incoming states to use for the flow
 function for instruction 6.  What to do?
 We have not yet analyzed a path through lines 4 and 5.  The table shows the
@@ -281,13 +289,14 @@ true branch at instruction 1:
 \begin{tabular}{r | c c c l}
   & x & y & z \\
 \hline
-P1 & ?? & ??   & ??  \\
-P2 & $Z_T,N_F$ & ??  & ??  \\
-P3 & N & Z & ??  \\
-P4 & N & Z & ??  \\
-P5 & Z & N & ??  \\
-P6 & N? & N? & ?? &  \textit{note: different!} \\
-P7 & N?? & Z?? & Z?? & \textit{??????} \\
+P1 & ? & ?   & ?  \\
+P2 & $Z_T,N_F$ & ?  & ?  \\
+P3 & N & Z & ?  \\
+P4 & N & Z & ?  \\
+P5 & Z & ? & ?  \\
+P6 & Z & N & ? &   \\
+P7 & N & N? & ? & \textit{note: different!} \\
+P8 & N?? & N?? & N?? & \textit{??????} \\
 \end{tabular}
 \end{minipage}
 \hspace*{1em}% \hspace whatever for space between
@@ -301,7 +310,7 @@ the incoming state coming from instruction 5 is different:  $x$ is still nonzero
 but so is $y$!
 
 We resolve this dilemma by \emph{combining} the abstract values computed along the two
-paths for $y$. The incoming abstract values at P6 for $y$ are $N$
+paths for $y$. The incoming abstract values at P7 for $y$ are $N$
 and $Z$.    We represent this uncertainty
 with a new abstract
 value $\top$ (pronounced ``top'').  This value indicates that we do know know if $y$ is zero or not,
@@ -323,9 +332,10 @@ P1 & ? & ? & ? \\
 P2 & $Z_T,N_F$ & ?  & ? \\
 P3 & N & Z & ? \\
 P4 & N & Z & ? \\
-P5 & Z & N & ?  \\
-P6 & N & $\top$ & ? & \textit{combined with P4} \\
-P7 & N & $\top$ & $\top$ & \textit{corrected}\\
+P5 & Z & ? & ?  \\
+P6 & Z & N & ?  \\
+P7 & N & $\top$ & ? & \textit{combined with P4} \\
+P8 & N & $\top$ & $\top$ & \textit{corrected}\\
 \end{tabular}
 \end{minipage}
 \hspace*{1em}
@@ -381,13 +391,6 @@ about the value of input variables (the question marks in our example tables)?
 If we do not know anything about the value $x$ can be,
 one good choice is to assume it can be anything. That is, in the initial
 environment $\sigma_0$, variables' initial state is mapped to $\top$.  
-
-Finally, as a small diagram point: in the interest of clarity, we sometimes
-elide program points between nodes when we can. That is, in the example above,
-the state going into instruction 3 is exactly the state coming out of
-instruction 2, so we label a single program point P3.  However, when we need to
-join multiple paths to determine the incoming state at a node, we often
-differentiate the two program points in our CFG diagrams. 
 
 \subsection{Dataflow analysis of loops}
 
