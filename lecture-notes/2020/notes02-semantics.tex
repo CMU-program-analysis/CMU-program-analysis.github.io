@@ -523,7 +523,7 @@ last rule used was the \texttt{while-true} statement:
 D :: 
 \infer{\langle \mathtt{while}~P~\mathtt{do}~S, E \rangle \Downarrow E'}
 {D_1 :: \langle P, E  \rangle \Downarrow \mathtt{true} & D_2 :: \langle S, E \rangle \Downarrow E_1 &
-D_3 :: \langle \mathtt{while}~P~\mathtt{do}~S, E \rangle \Downarrow E'}
+D_3 :: \langle \mathtt{while}~P~\mathtt{do}~S, E_1 \rangle \Downarrow E'}
 \end{equation*}
 
 \noindent Pick arbitrary $E''$ such that $D'' :: \langle \mathtt{while}~P~\mathtt{do}~S, E \rangle \Downarrow E''$
