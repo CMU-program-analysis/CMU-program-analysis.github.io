@@ -695,7 +695,7 @@ while worklist is not empty
     take a Node n off the worklist
     output = flow(n, input[n])
 	for Node j in succs(n)
-		if output $\not\alap$ input[n]
+		if output $\not\alap$ input[j]
 			input[j] = input[j] $\join$ output
 			add j to worklist
 \end{lstlisting}
