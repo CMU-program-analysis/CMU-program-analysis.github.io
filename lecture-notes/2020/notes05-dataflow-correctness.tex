@@ -205,7 +205,7 @@ We can now show that the flow functions for zero analysis are locally sound.  Al
 \emph{Case} & $f_Z\parg{x := y ~op~ z}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto \top]$: \\
  & Assume $c_i = E,n$ and $\alpha(E) \alap \sigma_{n_i}$ \\
  & Thus $\sigma_{n_{i+1}} = f_Z\parg{x := y ~op~ z}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto \top]$ \\
- & $c_{i+1} = E[x \mapsto k],n+1$ for some $k$ by rule \textit{step-const} \\
+ & $c_{i+1} = E[x \mapsto k],n+1$ for some $k$ by rule \textit{step-arith} \\
  &  Now $\alpha(c_{i+1}) = \alpha(E[x \mapsto k]) \alap \alpha(E)[x \mapsto \top]$ because the map is equal for all keys except $x$, and for $x$ we have $\alpha_\textit{simple}(k) \alap_\textit{simple} \top$ for all $k$, where $\alpha_\textit{simple}$ and $\alap_\textit{simple}$ are the unlifted versions of $\alpha$ and $\alap$, i.e. they operate on individual values rather than maps. \\
  & $\alpha(E) \alap \sigma_{n_i}$ implies $\alpha(c_{i+1}) = \alpha(E[x \mapsto k]) \alap \alpha(E)[x \mapsto \top] \alap \sigma_{n_i}[x \mapsto \top] = \sigma_{n_{i+1}}$, \\
 &  so therefore, by transitivity of $\alap$, $\alpha(c_{i+1}) \alap \sigma_{n_{i+1}}$ which finishes the case. \\
