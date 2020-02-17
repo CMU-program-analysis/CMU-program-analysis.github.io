@@ -335,24 +335,23 @@ and some other variable $r$. In this situation, Steensgaard's algorithm
 abstract location representing both of them. Now we can track the fact that $p$
 may point to either variable using a single points-to relationship.
 
-For example, consider the program below:
+For example, consider the program to the left, and the graph that Andersen's points-to analysis would produce (right):
 
 \begin{center}
-\begin{minipage}[t][-9.7em][b]{0.30\textwidth} % toggle vertical alignment of table
-\begin{tabular}{lll}
-\[
-\begin{array}{ll}
+\begin{minipage}[t]{0.30\textwidth} % toggle vertical alignment of table
+\vspace{-10em}
+$\begin{array}{ll}
 1: & p := \&x\\
 2: & r := \&p\\
 3: & q := \&y\\
 4: & s := \&q\\
 5: & r := s\\
-\end{array}
-\]
-&
+\end{array}$
+\end{minipage}
+\hspace*{1em}
+\begin{minipage}[b]{0.30\textwidth}
 \includegraphics[scale=0.5]{images/andersens1}
-\end{tabular}
-
+\end{minipage}
 \end{center}
 
 %\begin{tikzpicture}[scale=1.75]
@@ -369,11 +368,9 @@ For example, consider the program below:
 %\Edge(r)(q)
 %\end{tikzpicture}
 
-Andersen's points-to analysis would produce the following graph:
-
 But in Steensgaard's setting, when we discover that $r$ could point both to $q$ and to $p$, we must merge $q$ and $p$ into a single node:
-
-\begin{tikzpicture}[scale=1.75]
+\begin{center}
+\begin{tikzpicture}[scale=1.25]
 \GraphInit[vstyle=Normal]
 \Vertex{x}
 \Vertex[x=0.5,y=-1]{pq}
@@ -384,10 +381,12 @@ But in Steensgaard's setting, when we discover that $r$ could point both to $q$ 
 \Edges(r,pq,x)
 \Edges(s,pq,y)
 \end{tikzpicture}
+\end{center}
 
 Notice that we have lost precision: by merging the nodes for $p$ and $q$ our graph now implies that $s$ could point to $p$, which is not the case in the actual program.  But we are not done.  Now $pq$ has two outgoing arrows, so we must merge nodes $x$ and $y$.  The final graph produced by Steensgaard's algorithm is therefore:
 
-\begin{tikzpicture}[scale=1.75]
+\begin{center}
+\begin{tikzpicture}[scale=1.25]
 \GraphInit[vstyle=Normal]
 \Vertex{xy}
 \Vertex[x=0,y=-1]{pq}
@@ -397,9 +396,10 @@ Notice that we have lost precision: by merging the nodes for $p$ and $q$ our gra
 \Edges(r,pq,xy)
 \Edges(s,pq)
 \end{tikzpicture}
+\end{center}
 
-To define Steensgaard's analysis more precisely, 
-we will study a simplified version of that ignores function pointers.  It can be specified as follows:
+We study Steensgaard's analysis more precisely by specifying
+a simplified version that ignores function pointers:
 
 \[
 \begin{array}{c}
@@ -422,14 +422,40 @@ we will study a simplified version of that ignores function pointers.  It can be
 \end{array}
 \]
 
-With each abstract location $p$, we associate the abstract location that $p$ points to, denoted $*p$.  Abstract locations are implemented as a union-find\footnote{See any algorithms textbook} data structure so that we can merge two abstract locations efficiently.  In the rules above, we implicitly invoke \textit{find} on an abstract location before calling \textit{join} on it, or before looking up the location it points to.
+With each abstract location $p$, we associate the abstract location that $p$
+points to, denoted $*p$. Abstract locations are implemented as a
+union-find\footnote{See any algorithms textbook} data structure so that we can
+merge two abstract locations efficiently. In the rules above, we implicitly
+invoke \textit{find} on an abstract location before calling \textit{join} on it,
+or before looking up the location it points to.
 
-The \textit{join} operation essentially implements a union operation on the abstract locations.  However, since we are tracking what each abstract location points to, we must update this information also.  The algorithm to do so is as follows:
+The \textit{join} operation essentially implements a union operation on the
+abstract locations. However, since we are tracking what each abstract location
+points to, we must update this information also. The algorithm to do so is as
+follows:
 
-\newpage
+\lstdefinestyle{javastyle} {
+language=Java,
+basicstyle=\ttfamily\footnotesize,
+  morekeywords={virtualinvoke},
+  keywordstyle=\color{blue},
+  ndkeywordstyle=\color{red},
+  commentstyle=\color{dkred},
+  stringstyle=\color{dkgreen},
+  numbers=none,
+  breaklines=true,
+  numberstyle=\ttfamily\footnotesize\color{gray},
+  stepnumber=1,
+  numbersep=10pt,
+  backgroundcolor=\color{white},
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+  xleftmargin=.23in
+}
+\lstset{style=javastyle}
 
 \begin{lstlisting}[mathescape]
-
 join($\ell_1, \ell_2$)
     if (find($\ell_1$) == find($\ell_2$))
         return
@@ -437,7 +463,6 @@ join($\ell_1, \ell_2$)
     $n_2 \gets *\ell_2$
     union($\ell_1, \ell_2$)
     join($n_1, n_2$)
-
 \end{lstlisting}
 
 
@@ -445,10 +470,13 @@ Once again, we implicitly invoke \textit{find} on an abstract location before co
 
 As an optimization, Steensgaard does not perform the join if the right hand side is not a pointer.  For example, if we have an assignment $\parg{p := q}$ and $q$ has not been assigned any pointer value so far in the analysis, we ignore the assignment.  If later we find that $q$ may hold a pointer, we must revisit the assignment to get a sound result.
 
-Steensgaard illustrated his algorithm using the following program:
+Steensgaard illustrated his algorithm using the following program, and the graph
+the algorithm produces:
 
-\[
-\begin{array}{ll}
+\begin{center}
+\begin{minipage}[t]{0.3\textwidth}
+\vspace{-10em}
+$\begin{array}{ll}
 1: & a := \&x\\
 2: & b := \&y\\
 3: & \mbox{if}~ p ~\mbox{then}\\
@@ -457,24 +485,28 @@ Steensgaard illustrated his algorithm using the following program:
 6: & ~~~~ y := \&x\\
 7: & c := \&y\\
 \end{array}
-\]
+$
+\end{minipage}
+\hspace*{1em}
+\begin{minipage}[b]{0.30\textwidth}
+\includegraphics[scale=0.6]{images/steensgard1}
+\end{minipage}
+\end{center}
 
-His analysis produces the following graph for this program:
-
-\begin{tikzpicture}[scale=1.75]
-\GraphInit[vstyle=Normal]
-\Vertex{c}
-\Vertex[x=1,y=0]{b}
-\Vertex[x=0.5,y=1]{y}
-\Vertex[x=1.5,y=1]{a}
-\Vertex[x=1,y=2]{xz}
-\SetUpEdge[style={->,ultra thick}]
-\Edges(a,xz)
-\Edges(y,xz)
-\Edges(b,y)
-\Edges(c,y)
-\end{tikzpicture}
-
+% \begin{tikzpicture}[scale=1.75]
+% \GraphInit[vstyle=Normal]
+% \Vertex{c}
+% \Vertex[x=1,y=0]{b}
+% \Vertex[x=0.5,y=1]{y}
+% \Vertex[x=1.5,y=1]{a}
+% \Vertex[x=1,y=2]{xz}
+% \SetUpEdge[style={->,ultra thick}]
+% \Edges(a,xz)
+% \Edges(y,xz)
+% \Edges(b,y)
+% \Edges(c,y)
+% \end{tikzpicture}
+% 
 
 %Rayside demonstrates the difference in precision between Andersen's and Steensgaard's analyses using the following program:
 
@@ -489,7 +521,8 @@ His analysis produces the following graph for this program:
 %\]
 
 
-Rayside illustrates a situation in which Andersen must do more work than Steensgaard:
+\paragraph{Efficiency.} Rayside illustrates how Andersen must sometimes do more work than
+Steensgaard:
 
 \todo{Cite Rayside notes}
 
@@ -502,13 +535,41 @@ Rayside illustrates a situation in which Andersen must do more work than Steensg
 \end{array}
 \]
 
-After processing the first three statements, Steensgaard's algorithm will have unified variables $x$ and $y$, with $p$ and $q$ both pointing to the unified node.  In contrast, Andersen's algorithm will have both $p$ and $q$ pointing to both $x$ and $y$.  When the fourth statement is processed, Steensgaard's algorithm does only a constant amount of work, merging $z$ in with the already-merged $xy$ node.  On the other hand, Andersen's algorithm must not just create a points-to relation from $q$ to $z$, but must also propagate that relationship to $p$.  It is this additional propagation step that results in the significant performance difference between these algorithms.\footnote{For fun, try adding a new statement $r := p$ after statement 3.  Then $z$ has to be propagated to the points-to sets of both p and r.  In general, the number of propagations can be linear in the number of copies and the number of address-of operators, which makes it quadratic overall even for programs in the simple form above.}
+After processing the first three statements, Steensgaard's algorithm will have
+unified variables $x$ and $y$, with $p$ and $q$ both pointing to the unified
+node. Andersen's algorithm will have both $p$ and $q$ pointing to
+both $x$ and $y$. When the fourth statement is processed, Steensgaard's
+algorithm does only a constant amount of work, merging $z$ in with the
+already-merged $xy$. On the other hand, Andersen's algorithm must not just
+create a points-to relation from $q$ to $z$, but must also propagate that
+relationship to $p$. It is this additional propagation step that results in the
+significant performance difference between these algorithms.\footnote{For fun,
+  try adding a new statement $r := p$ after statement 3. Then $z$ has to be
+  propagated to the points-to sets of both p and r. In general, the number of
+  propagations can be linear in the number of copies and the number of
+  address-of operators, which makes it quadratic overall even for programs in
+  the simple form above.}
 
-Analyzing Steensgaard's pointer analysis for efficiency, we observe that each of $n$ statements in the program is processed once.  The processing is linear, except for \textit{find} operations on the union-find data structure (which may take amortized time $O(\alpha(n))$ each) and the \textit{join} operations.  We note that in the \textit{join} algorithm, the short-circuit test will fail at most $O(n)$ times---at most once for each variable in the program.  Each time the short-circuit fails, two abstract locations are unified, at cost $O(\alpha(n))$.  The unification assures the short-circuit will not fail again for one of these two variables.  Because we have at most $O(n)$ operations and the amortized cost of each operation is at most $O(\alpha(n))$, the overall running time of the algorithm is near linear: $O(n * \alpha(n))$.  Space consumption is linear, as no space is used beyond that used to represent abstract locations for all the variables in the program text.
+Analyzing Steensgaard's pointer analysis for efficiency, we observe that each of
+$n$ statements in the program is processed once. The processing is linear,
+except for \textit{find} operations on the union-find data structure (which may
+take amortized time $O(\alpha(n))$ each) and the \textit{join} operations. We
+note that in the \textit{join} algorithm, the short-circuit test will fail at
+most $O(n)$ times---at most once for each variable in the program. Each time the
+short-circuit fails, two abstract locations are unified, at cost $O(\alpha(n))$.
+The unification assures the short-circuit will not fail again for one of these
+two variables. Because we have at most $O(n)$ operations and the amortized cost
+of each operation is at most $O(\alpha(n))$, the overall running time of the
+algorithm is near linear: $O(n * \alpha(n))$. Space consumption is linear, as no
+space is used beyond that used to represent abstract locations for all the
+variables in the program text.
 
-Based on this asymptotic efficiency, Steensgaard's algorithm was run on a 1 million line program (Microsoft Word) in 1996; this was an order of magnitude greater scalability than other pointer analyses known at the time.
+Based on this asymptotic efficiency, Steensgaard's algorithm was run on a 1
+million line program (Microsoft Word) in 1996; this was an order of magnitude
+greater scalability than other pointer analyses known at the time.
 
-Steensgaard's pointer analysis is field-insensitive; making it field-sensitive would mean that it is no longer linear.
+Steensgaard's pointer analysis is field-insensitive; making it field-sensitive
+would mean that it is no longer linear.
 
 \section{Dynamic dispatch}
 
