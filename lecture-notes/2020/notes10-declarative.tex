@@ -1,0 +1,326 @@
+\documentclass[11pt]{article}
+\usepackage{../../tex/math-cmds}
+\usepackage{../../tex/analysis}
+\usepackage{mathabx}
+
+   
+\title{Lecture Notes: \\
+		Declarative Program Analysis}
+\author{17-355/17-665/17-819: Program Analysis (Spring 2020)\\
+        Claire Le Goues, \\ {\tt clegoues@cs.cmu.edu}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+We have so far defined a framework and associated set of algorithms to build up
+dataflow analyses with respect to a given programming language. We started from
+a representation --- an abstract syntax, translated to a control flow graph, and
+then specified precisely via operational semantics --- and then defined flow
+functions and algorithms with respect to those semantics. Adapting these
+frameworks to more complex languages introduced changed representations and new
+ways of reasoning.  Our first analyses built up the analysis result by computing
+a fixpoint; subsequent analyses were constraint-based, where inference
+rules generated constraints over the analysis results (again referencing the
+program syntax or semantics), and then some (unexplained/abstracted away)
+constraint solver can solve those constraints to give a satisfactory answer.  We
+did not spend much time on what a satisfactory answer looks like, the intuition
+is that the more precise an answer a constraint solver can solve, the more we
+will like it.
+
+More analyses can be built up from these foundations, with new algorithms
+specified in much the same way, and significant variance. Computer scientists
+studying program anlysis do this all the time in the papers they publish.
+However, the variation point between new algorithms are often unclear; every
+variation is a new algorithm; and reasoning about correctness, and relative
+precision and performance, is very difficult. 
+
+This problem becomes even more exacerbated when we consider the connection
+between the high-level algorithms, even those we worked out in these notes, and
+\emph{actual implementation}.  Turning our specification of dataflow analysis
+into implementation, even for simple languages like \WhileLang, can be hard! 
+
+This can be frustrating, perhaps especially for constraint-based analyses like
+pointer analysis.  We can write very concise, precise inference rules to
+generate constraints for points-to analysis; why does translating those rules to
+apply to real programming languages require so much code?
+
+\emph{Declarative programming} presents an attractive paradigm for implementing
+program analyses and one that is experiencing a resurgence of popularity.
+Declarative programming is a programming paradigm that expresses the logic of a
+computation without describing its control flow. Although there are several
+paradigms, including constraint programming (which connects well to our work in
+class so far), one classically well-known declarative programming language is
+Prolog, an example of a logic programming language. Prolog is based in
+first-order logic, where the program logic is expressed in terms of relations,
+represented as facts and rules. A computation is initiated by running a query
+over these relations.  It is associated with several very specific domains, like
+AI, NLP, expert systems, and, importantly, database systems.
+
+
+
+One quick definition of Datalog is “Prolog without function symbols or
+negation”. Another is “a deductive database”; that is, a database extended with
+first-order Horn clauses.
+
+\iffalse 
+Datalog is a great fit for the domain of program analysis and, as a consequence,
+has been extensively used both for low-level [5, 8, 11] and for high-level [3, 4] analyses. The essence of Datalog is its ability to define recursive relations. Mutual recursion is the source of all complexity in program analysis. For a standard example, the logic for computing a callgraph depends on having points-to information for
+pointer expressions, which, in turn, requires a callgraph. We can easily see such recursive definitions in points-to analysis alone. Consider, for instance, two relations,
+AssignHeapAllocation(?heap, ?var) and Assign(?to, ?from). (We follow the D
+convention of capitalizing the first letter of relation names, while writing variable names
+in lower case and prefixing them with a question-mark.) The former relation represents
+all occurrences in the Java program of an instruction “a = new A();” where a heap object is allocated and assigned to a variable. That is, a pre-processing step takes a Java
+program (in D this is in intermediate, bytecode, form) as input and produces the relation contents. A static abstraction of the heap object is captured in variable ?heap—it
+can be concretely represented as, e.g., a fully qualified class name and the allocation’s
+bytecode instruction index. Similarly, relation Assign contains an entry for each assignment between two Java program (reference) variables.
+The mapping between the input Java program and the input relations is straightforward and purely syntactic. After this step, a simple pointer analysis can be expressed
+entirely in Datalog as a transitive closure computation:
+
+
+Motivation: pointer analysis basically is a bunch of rules specified
+declaratively, this is ridiculous. 
+
+Offers significantly faster analyses at scale, and much easier to specify
+
+Datalog is: a DSL ... (history, databases, prolog)
+something something non-BDDs
+
+
+
+BDDBDDB is circa 2005, hilarious.
+for pointer analysis, 2008
+focus on program analysis stuff
+
+Came from databases but most of the interesting stuff is outside
+
+Language extensions are usually needed. 
+
+Principles for how to use for program analysis, along with key ideas.
+
+Illustrate with a simple (zero analysis?) example
+
+extend to pointer analysis
+
+
+
+
+Has rule syntax
+Head <- body (body is one or more conditions, head is an output table)
+Recursive rules: result of head in rule body
+
+Example: all-pairs reachability in a graph
+
+Can use not.
+
+Safety: every variable must occur in a non-negated relational atom inthe rule
+body, so that the results are finite and they only depend on the actual contents
+of the DB
+
+(what's the in the DB for program analysis?)
+
+https://web.cs.ucdavis.edu/~green/papers/sigmod906t-huang-slides.pdf
+
+Semantics:
+
+Model-theoretic
+— Most “declarative”. Based on model-theoretic semantics of first order
+logic. View rules as logical constraints.
+— Given input DB I and Datalog program P, find the smallest possible DB
+instance I’ that extends I and satisfies all constraints in P.
+• Fixpoint-theoretic
+— Most “operational”. Based on the immediate consequence operator for
+a Datalog program.
+— Least fixpoint is reached after finitely many iterations of the immediate
+consequence operator.
+— Basis for practical, bottom-up evaluation strategy.
+
+ Proof-theoretic
+— Set of provable facts obtained from Datalog program given input DB.
+— Proof of given facts (typically, top-down Prolog style reasoning)
+
+
+On program analysis:
+
+What is it?
+– Fundamental analysis aiding software development
+– Help make programs run fast, help you find bugs
+• Why in Datalog?
+– Declarative recursion
+• How does it work?
+– Really well! An order-of-magnitude faster than handtuned, Java tools
+But optimizations are crucial for performance
+
+Why pointer analysis? Slide 207+ algorithms
+
+Instead, want: specification + implementation
+
+(motivate via connection to implementation, and how it's annoyingly hard)
+
+
+program analysis: domain of mutual recursion (need it  to do it)
+
+Dataintegration circa 95 gave us control + dataflow; adding BDDs in 05 made it
+faster
+
+examples of rules for simple + fields
+
+299: ehance specification w/o changing base code
+
+slide 320: doop is way faster than previous work (paddle)
+
+Type-based was important, types as sets of values
+
+“Type inference for datalog and its application to
+query optimisation”, de Moor et al., PODS ‘08
+• “Type inference for datalog with complex type
+hierarchies”, Schafer and de Moor, POPL ‘10
+• “Semantic Query Optimization in the Presence of
+Types”, Meier et al., PODS ‘10
+
+(I may not be smart enough or have enough time...)
+
+
+https://www2.cs.duke.edu/courses/fall16/compsci516/Lectures/Lecture-21-Datalog.pdf
+
+a datalog program always terminates b/c the values are coming from the ``active
+domain'' in the input relations (finite values from possibly infinite domain) in
+the instance of a database (age versus age in a database)
+
+Possibly values in the dbs is finite. 
+
+
+http://webdam.inria.fr/Alice/pdfs/Chapter-12.pdf
+
+Probably has examples
+
+
+https://www.cs.purdue.edu/homes/xyzhang/spring08/16-datalog-4.pdf
+
+Case study: data race detection
+
+https://yanniss.github.io/doop-datalog2.0.pdf
+
+7 pages, pretty accessible
+
+all tuples represented for program relations rather than BDDs (which used to be
+assumed necessary for pointer analysis)
+
+
+The essence of Datalog is its ability to define recursive relations. Mutual
+recursion is the source of all complexity in program analysis. F
+
+pointer analysis requires callgraph requries pointer analysis
+
+
+https://prl.ccs.neu.edu/blog/static/datalog-for-static-analysis.pdf
+
+
+
+
+
+
+
+Yannis' work on DOOP whence the slides:
+https://yanniss.github.io/doop-oopsla09prelim.pdf
+
+
+Also maybe: https://souffle-lang.github.io/pdf/cc.pdf
+
+Tracing the history:
+https://prl.ccs.neu.edu/blog/static/datalog-for-static-analysis.pdf
+
+
+https://souffle-lang.github.io/pdf/SoufflePLDITutorial.pdf
+
+Datalog as	DSL	for	Static	Program	Analysis
+• Datalog in	static	program	analysis
+• Reps’94,	Engler’96,	…
+• Datalog is	restricted	Horn-Logic
+• Declarative	programming	for	recursive	relations
+• Finite	constant	set
+• No	back-tracking	for	evaluation	/	fast
+• Extensional/Intensional database
+• Extractor
+• Syntactic	translation	to	logical	relations
+• Datalog Engine
+• Extensional	Database/Facts:	input	relations *** learn more
+• Intensional Database/Rules:	program	analysis	specification *** learn
+more
+
+Slide 6: example
+
+Why the gap? Optimized to DB
+
+Souffle:
+
+New	Paradigm	for	Evaluating	Datalog Programs
+• To	achieve	similar	performance	to	hand-written	C++	code
+• Assumptions
+• Rules	do	not	change	in	static	program	analysis	tools
+• Facts	(	=	input	program	representation)	may	change
+• Executed	on	large	multi-core	shared-memory	machines	
+• Solution:	
+• Synthesis	with	Futamura projections
+• Apply	partial	specialization	techniques
+• Synthesis	in	stages
+• Each	stage	opens	are	new	opportunities	for	optimisations
+
+
+
+Datalog
+• Datalog is	logic-based query	language
+• Easy	to	use	relational	programming	language
+• Recursive queries
+• Adapts	Prolog-style	syntax
+• Based	on	first-order	logic
+• Decidable	fragment	of	logic
+• Finite	Universe
+• No	functors
+
+Slide 21: happy drinker example
+
+
+
+In	a	program,	predicates	can	be	either
+• EDB =	Extensional	Database =	set	of	ground	facts,	e.g.,	predicates	whose	
+relations	are	stored	in	a	database.
+• IDB =	Intensional Database =	relations	defined	&	computed
+by	rules.
+
+Slide 34/35: example
+
+
+https://prl.ccs.neu.edu/blog/static/datalog-for-static-analysis.pdf
+
+The previous section explains how a Datalog program S represents a database of
+facts. This database is known as the intensional database (or IDB) represented
+by S [7].
+It’s often useful to connect a Datalog program to an existing database of
+facts. Such databases are called extensional databases.
+
+
+Once we incorporate an extensional database, we can view a Datalog program P as a mapping from an EDB to an IDB:
+P : EDB → IDB
+Typically, P is a time-invariant mapping from a time-invariant set of facts
+(the EDB) to some answer (the IDB).
+(The EDB / IDB distinction is a pragmatic one. You could pretend that the
+EDB is a sequence of facts at the top of the Datalog program and the IDB is
+always fully computed and committed to an extensional database.)
+
+Intension and extension, in logic, correlative words that indicate the reference
+of a term or concept: “intension” indicates the internal content of a term or
+concept that constitutes its formal definition; and “extension” indicates its
+range of applicability by naming the particular objects that it denotes.
+
+
+Datalog distinguishes between extensional predicate symbols (defined by facts)
+and intensional predicate symbols (defined by rules). In the example above
+ancestor is an intensional predicate symbol, and parent is extensional.
+
+
+\fi
+
+
+\end{document}
