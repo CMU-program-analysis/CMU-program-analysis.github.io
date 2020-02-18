@@ -257,8 +257,8 @@ dataflow information in question. We get the following rules:
 	{}
 & ~~~~~ &
 \infer[\textit{plus}]
-	{\parg{e_1^{l_1}+e_2^{l_2}}^l \hookrightarrow (\sigma(l_1) +_\top \sigma(l_2)) \alap \sigma(l)}
-	{}
+	{\parg{e_1^{l_1}+e_2^{l_2}}^l \hookrightarrow (\sigma(l_1) +_\top \sigma(l_2)) \alap \sigma(l) \cup C_1 \cup C_2}
+	{\parg{e_1}^{l_1} \hookrightarrow C_1 & \parg{e_2}^{l_2} \hookrightarrow C_2}
     
 \end{array}
 	\]
