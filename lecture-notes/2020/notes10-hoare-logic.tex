@@ -105,19 +105,22 @@ $\forall E \in \mathcal{E} . \forall E' \in \mathcal{E} . ( E \vDash P \wedge
 \end{center}
 
 \noindent Question: \textit{What about total correctness?}
-
+\iffalse
 \vspace{1em}
 
-% $ \forall E \in \mathcal{E} . E \vDash A \implies \exists E' \in \mathcal{E}
-% . \langle S, E \rangle \Downarrow E' \wedge E' \vDash B$
+ANSWER: 
 
-% or even better:
+ $ \forall E \in \mathcal{E} . E \vDash A \implies \exists E' \in \mathcal{E}
+ . \langle S, E \rangle \Downarrow E' \wedge E' \vDash B$
 
-% $\forall E \in \mathcal{E} \forall E' \in \mathcal{E} . ( E \vDash A \wedgge
-% \langle S, E \rangle \Downarrow E') \implies E' \vDash B \wedge \forall E \in
-% \mathcal{E} . E \vDash A \implies \Exists E' \in \mathcal{E}. \langle S, E
-% \rangle \Downarrow E'$
+ or even better:
 
+ $\forall E \in \mathcal{E} \forall E' \in \mathcal{E} . ( E \vDash A \wedge
+ \langle S, E \rangle \Downarrow E') \implies E' \vDash B \wedge \forall E \in
+ \mathcal{E} . E \vDash A \implies \exists E' \in \mathcal{E}. \langle S, E
+ \rangle \Downarrow E'$
+
+\textbf{WORKSHEET EXAMPLES} 
 % Examples for the worksheet?
 % {true } x := 5 {      }
 % {         } x : = x + 3 { x = y + 3 }
@@ -125,6 +128,7 @@ $\forall E \in \mathcal{E} . \forall E' \in \mathcal{E} . ( E \vDash P \wedge
 % { x = a} if (x < 0} then x := -x {     }
 % { false } x := 3 {        }
 % { x <  0} while (x != 0) x := x – 1 {      }
+\fi
 
 This gives us a formal, but unsatisfactory, mechanism to decide $\vDash \{ P
 \}~S~\{ Q \}$.  By defining the judgement in terms of the operational semantics,
@@ -185,10 +189,22 @@ consequence:
 \end{center}
 
 \looseness-1
-We elide a formal statement of the soundness of this system.  Intuitively, it
+A system of axiomatic semantics is \emph{sound} if everything we can prove is
+also true, that is: $\mathtt{if}~\vdash \{ P \} S \{ Q \}~\mathtt{then}~\vDash \{ P \} S
+\{ Q \}$.  
+This can be proven via simultaneous induction on the structure of the
+operational semantics derivation and the axiomatic semantics proof; will not
+conduct this proof in these notes.  Intuitively, it
 expresses that the axiomatic proof we can derive using these rules is equivalent
-to the operational semantics derivation (or that they are sound and relatively
-complete, that is, as complete as the underlying logic).
+to the operational semantics derivation
+
+A system of axiomatic semantics is \emph{complete} if we can prove all true things: 
+ $\mathtt{if}~\vDash \{ P \} S \{ Q \} ~ \mathtt{then}~\vdash \{ P \} S \{ Q \}
+ $
+%
+The system we have outlined is relatively complete (that is, as complete as the
+underlying logic). We now move to showing how to (soundly/completely) prove
+properties of programs using this style of semantics.
 
 \section{Proofs of a Program}
 
@@ -262,13 +278,15 @@ If $\{P\} ~S~ \{Q\}$ and for all $P'$ such that $\{P'\} ~S~ \{Q\}$, $P'
 \Rightarrow P$, then $P$ is the weakest precondition $wp(S,Q)$ of $S$ with
 respect to $Q$.
 
+\iffalse \textbf{WORKSHEET EXAMPLES} \fi
+
 %Exercise:
 % y=1 {z=y+1} x:=z*2 {x=4}
 % y>2 {y=7} x:=y+3 {x>5}
 % y!=0 {false} x:=2/y {true}
 % {y<16} x:=2/y {x<8}
 % Which of the Hoare triples above are valid?
-% For which of the valid triples…
+% For which of the valid triples
 % Can you write a stronger postcondition? Leave the precondition unchanged, and ensure the resulting triple is still valid.
 % Can you write a weaker precondition? Leave the postcondition unchanged, and ensure the resulting triple is still valid.
 
@@ -285,13 +303,15 @@ wp(S;~ T, Q) & = wp(S, ~wp(T, Q))
 wp(\mbox{if}~ B ~\mbox{then}~ S ~\mbox{else}~ T, Q) & = B \Rightarrow wp(S,Q) \land \lnot B \Rightarrow wp(T,Q)
 \end{array}
 \]
-
-% exercise:
-% Fill in the missing pre- or post-conditions with predicates that make each Hoare triple valid.
-% {x=y} x:=y*2 {      }
-% {      } x:=x+3{x=z}
-% {       } x:=x+1;y:=y*x{y=2*z}
-% {       } if (x>0) then y:=x else y:=0 {y>0}
+\iffalse
+\textbf{PROBABLY DON'T HAVE TIME:}
+ exercise:
+ Fill in the missing pre- or post-conditions with predicates that make each Hoare triple valid.
+ {x=y} x:=y*2 {      }
+ {      } x:=x+3{x=z}
+ {       } x:=x+1;y:=y*x{y=2*z}
+ {       } if (x>0) then y:=x else y:=0 {y>0}
+\fi
 
 \subsection{Loops}
 
