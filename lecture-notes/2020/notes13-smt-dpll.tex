@@ -423,8 +423,39 @@ theory of arithmetic, and it all works out.
 
 \subsection{DPLL(T)} 
 
- This combination of DPLL with a
-theory T is called DPLL-T.
+This combination of DPLL with a theory $T$ is called DPLL(T) or (DPLL-T).  It is
+an SMT algorithm based on the DPLL SAT solver, but parameterized with respect to
+a set of theories T.  
+%
+At a high level, DPLL(T) works as we illustrated above: it converts mixed
+constraints to boolean constraints and then runs DPLL, and then checks the
+resulting assignments with the underlying theories to determine if they are
+valid. The version of DPLL used in DPLL(T) has two key changes compared to the
+original, however.
+
+First, DPLL(T) does not use the pure variable elimination optimization.  This is
+because, in pure propositional logic, variables are necessarily independent.  If
+some variable $x$ only appears positively, you can set it to \texttt{true} and
+save time.  With theories, variables may be dependent.  For example, consider
+
+\[
+\begin{array}{c}
+(\mathbf{x > 10} \lor x < 3) \land (\mathbf{x > 10} \lor x < 9) \land (x < 7)
+\end{array}
+\]
+
+In the above, $x > 10$, but if we just set that term to be true as part of the
+model, the other terms all become false.  We cannot simply skip over it. 
+
+Second, unit propagation interacts with the theories to add constraints to the
+formula when available.  We saw this example above, when the theory of
+arithmetic found a contraditiction in the formula 
+\[
+p1 \land p2 \land (p3 \lor p4)
+\]
+
+And the solving procedure added a clause to the formula before giving it back to
+the SAT solver. 
 
 \subsection{Bonus: Arithmetic solvers}
 
