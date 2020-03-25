@@ -1,0 +1,512 @@
+\documentclass[11pt]{article}
+\usepackage{../../tex/math-cmds}
+\usepackage{../../tex/analysis}
+\usepackage{IEEEtrantools}
+
+
+\title{Lecture Notes: Satisfiability Modulo Theories}
+\author{17-355/17-665/17-819: Program Analysis (Spring 2019)\\
+        Jonathan Aldrich\\
+		{\tt aldrich@cs.cmu.edu}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Motivation and Overview}
+
+We have now seen several techniques that generate logical formulas that must
+then be solved. For example, in Hoare-style verification, we used weakest
+preconditions and verification conditions to generate a formula of the form
+$P \implies Q$. Usually $P$ and $Q$ have free variables $x$, e.g. $P$ could be
+$x > 3$ and $Q$ could be $x > 1$. We want to prove that $P \implies Q$ no matter
+what $x$ we choose, i.e. no matter what the model (an assignment from variables
+to values) is. This is equivalent to saying $P \implies Q$ is \textit{valid}.
+We'd like tools to check this automatically. Similarly, symbolic execution
+generates sets of guards $g$ in terms of program and symbolic expressions. Such
+guards also typically have free variables, such as symbolic values representing
+all possible program inputs. We would like to determine if such \emph{path
+  conditions} are feasible, when constructing trees of all possible program
+executions; we moreover would like to identify values for those free variables,
+because that can help generate test inputs that cover particular program paths.
+SMT solving addresses this type of problem. Although the general goal won't be
+feasible for all formulas, it is feasible for a useful subset of formulas.
+
+As an overview, note that we begin by reducing formula validity to another
+problem, that of \textit{satisfiability}. A formula $F$ with free variable $x$
+is valid iff for all $x$, $F$ is true. That's the same thing as saying there is
+no $x$ for which $F$ is false. But that's furthermore the same as saying there
+is no $x$ for which $\lnot F$ is true. This last formulation is asking whether
+$\lnot F$ is \textit{satisfiable}. It turns out to be easier to seach for a
+single satisfying model (or prove there is none), then to show that a formula is
+valid for all models. Many satisfiability modulo theories (SMT) solvers that do
+this.
+
+What does the ``modulo theories'' part of SMT mean? Well, strictly speaking
+satisfiability is for boolean formulas: formulas that include boolean variables
+as well as boolean operators such as $\land, \lor,$ and $\lnot$. They may
+include quantifiers such as $\forall$ and $\exists$, as well. But if we want to
+have variables over the integers or reals, and operations over numbers (e.g.
+$+,>$, the types of relations we've included even in our very simple \WhileLang
+language), we need a solver for a \textit{theory}, such as the theory of
+Presburger arithmetic (which could prove that $2*x = x+x$), or the theory of
+arrays (which could prove that assigning $x[y]$ to $3$ and then looking up
+$x[y]$ yields $3$). SMT solvers include a basic satisfiability checker, and
+allow that checker to communicate with specialized solvers for those theories.
+
+We will begin by discussing the problem of basic satisfiability before moving on
+to how to incorporate additional theories into the formulas. 
+
+\iffalse
+\section{Claire notes}
+Option 1: just search/backtrack, naively. 
+
+DPLL improves naive backtracking search with two things:
+(1) unit propogation
+(2) Pure variable elimination
+
+
+A theory: set of functions and predicate symbols (sentences, or syntax) and definitions for symbol meanings (semantics, or a deductive system that determines satisfiability).
+Usually, sentences formally defined by a grammar of terms over atoms. 
+Consider primarily theories reasoning about conjunctions of literals, like:
+0, 1, -1, 2, -3, ?, +, -, =, < (usual meanings; ?theory of integers with arithmetic? or ?Presburger arithmetic?)
+=, · (axioms of transitivity, anti-symmetry, and 8x. 8y. x · y Ç y ·  x ; ?theory of total orders?)
+sel, upd (McCarthy?s ?theory of lists?) 
+A satisfying assignment (model, interpretation) maps literals (terms/negated terms) to booleans.
+
+Theorem (Godel, 1931): No consistent system of axioms whose theorems can be listed by an algorithm is capable of proving all truths about relations of the natural numbers.
+But we can profitably restrict attention to some relations about numbers.
+
+Decision procedure for theories:
+The Decision Problem: Decide whether a formula in a theory with first-order logic is true.
+Example: Decide ?8x. x>0 ) (9y. x=y+1)? in {N, +, =, >}
+A theory is decidable when there is an algorithm that solves the decision problem.
+This algorithm is the decision procedure for that theory.
+
+Decide whether a conjunction of literals in the theory is satisfiable
+Factors out the first-order logic part
+The decision problem can be reduced to the satisfiability problem
+Parameters for 8, skolem functions for 9, negate and convert to DNF (sorry; I won?t explain this here)
+?Easiest? Theory = Propositional Logic = SAT
+A decision procedure for it is a ?SAT solver?
+
+CNF:
+A literal is ?variable? or ?negated variable?: x , :y
+A clause is a disjunction of literals: (x _ y _ :z)
+Conjunctive normal form (CNF) is a conjunction of clauses: (x _ y _ :z)  ^  (:x _ :y)  ^  (z)
+Must satisfy all clauses at once
+Goal: Given a formula, say ?SAT? or give a counter example
+
+A satisfying assignment maps boolean variables to boolean values. 
+Suppose ?(x) = true and ?(y) = false
+? ² x		// ² = ?models? or ?makes
+? ² x _ y	// true? or ?satisfies?
+? ² y ) :x 
+? ² x ) (x ) y)
+? ² :x _ y
+
+Cook-Levin theorem:
+Theorem (Cook-Levin). The boolean satisfiability problem is NP-complete.
+Cook '71, ?The complexity of theorem proving procedures?. 
+Karp '72 with ?Reducibility among combinatorial problems?. 
+Combo: Turing Awards.
+SAT is in NP: verify the satisfying assignment
+SAT is NP-Hard: we can build a boolean expression that is satisfiable iff a given nondeterministic Turing machine accepts its given input in polynomial time
+
+
+exists ?. ? \vDash (x OR y OR :z)  ^  (~x or ~y)  ^  (z)
+
+So how do we solve it?
+ 
+Ex: ?(x) = ?(z) = true, ?(y) = false
+ 
+Expected running time?
+
+
+(Examples slides 16-19)
+
+A unit clause contains only a single literal.
+Ex:	(x)		(:y)
+Can only be satisfied by making that literal true.
+Thus, there is no choice: just do it!
+A pure variable is either ?always : negated? or ?never : negated?.
+Ex: (:x _ y _ :z)  ^  (:x _ :y)  ^  (z)
+Can only be satisfied by making that literal true.
+Thus, there is no choice: just do it!
+
+
+If X is a literal in a unit clause, add X to that satisfying assignment and replace X with ?true? in the input, then simplify: 
+(:x _ y _ :z)  ^  (:x _ :z)  ^  (z)
+identify ?z? as a unit clause
+? += ?z = true?
+(:x _ y _ :true)  ^  (:x _ :true)  ^  (true)
+(:x _ y)            ^  (:x)
+Profit! Let's keep going ...
+
+Pure literals:
+If V is a variable that is always used with one polarity, add it to the satisfying assignment and replace V with ?true?, then simplify.
+(:x _ :y _ :z)  ^  (x _ :y _ z) 
+identify ?:y? as a pure literal
+(:x _ true _ :z)  ^  (x _ true _ z) 
+Done. 
+
+
+
+
+The Davis-Putnam-Logemann-Loveland (DPLL) algorithm is a complete decision procedure for CNF SAT based on:
+Identify and propagate unit clauses
+Identify and propagate pure literals
+If all else fails, exhaustive backtracking search
+Builds up a partial satisfying assignment over time. 
+DP '60: ?A Computing Procedure for Quantification Theory?
+DLL '62: ?A Machine Program for Theorem Proving?
+
+DPLL algorithm pseudo-code slide 25 (lecture17-hoare2-smt)
+
+
+Example slide 26
+
+We?ve seen how to handle arbitrary boolean expressions of boolean variables.
+There are many other theories, like: 
+Linear Inequalities: Given a finite set of variables V and a finite set of real-valued constants C: 
+Term ::= C1V1 + ? + CnVn <= Cn+1
+Can be decided via Simplex
+Equality and uninterpreted functions: Given a finite set of predicate symbols P (each of which has an associated arity)
+Predicate ::= Pi(Predicate1, ? Predicaten)
+Term ::= 	Predicate | Predicate1 = Predicate2
+
+
+Recall separation of concerns: 
+#1 Prover handles connectives (8, Æ, ))
+#2 Sat procs handle literals (+, ·, 0, head)
+Idea: reduce proof obligation into propositional logic, feed to SAT solver (CVC)
+To Prove: 3*x=9 ) (x = 7 Æ x · 4)
+Becomes Prove: A ) (B Æ C)
+Becomes Unsat: A Æ :(B Æ C)
+Becomes Unsat: A Æ (:B Ç :C)
+
+Motivation: mixed theories
+
+What about:  (strlen(x) + y <= 5) => (strcat(x,x) != ?abba?) 
+Satisfied by {x = ?abc?, y = 3}, for example
+We may have a sat procedure for each theory involved in a theorem, but combination is much harder.
+We can?t just separate out the terms from each to see if they are separately satisfiable, because it?s unsound: equi-sat ? equivalent.
+The problem is that the two satisfying assignments may be incompatible
+
+Beyond basic logic, we want to reason about
+Strings: strlen(x), regexp_match(x, ?[0-9]+?), ...
+Equality: a = b => f(a) = f(b), ...
+Linear Arithmetic: 2x+3y <= 10, ?
+Bitvectors: (x >> 2) | y == 0xff, ?
+Lists: head(cons(p,q)) = p 
+All at the same time!
+Handle each domain separately (as a theory) and then combine them all together using DPLL and SAT as the ?glue?.
+
+A satisfiability modulo theories (SMT) solver operates on propositions involving both logical terms and terms from theories. 
+Modern SMT solvers can use any theory that satisfies a particular interface.
+Replace Theory clauses with special propositional variables. 
+Use a pure SAT solver. If the solution involves some theory clauses, ask the Theory if they can all be true. If not, add constraints and restart.
+
+
+Given a query like (x > 5) && (p || (x < 4)) && !p
+Almost everything can be handled by SAT:
+(x > 5) && (p || (x < 4)) && !p
+Only the highlighted parts require a Theory.
+So ask SAT to consider:
+T1 && (p || T2) && !p
+And then whenever SAT gives a model, ask the theories if that model makes sense.
+
+
+
+33-34 has architecture/theory interface
+
+interface:
+
+Initialize(universe : Literal Set)
+SetTrue(l : Literal) : Literal Set
+Raise exception if l is inconsistent. Otherwise, add l to set of known facts. Return newly implied set of true facts (e.g., ?a=c? after ?a=b? and ?b=c?)
+Backtrack(n : Nat)
+Forget last n facts from ?SetTrue?. 
+IsDefinitelyTrue(l : Literal) : Bool
+Explanation(l : Literal) : Literal Set
+If l is true, return a model (proof) of it. 
+
+
+35 is then example 
+
+DPLL(T): DPLL(T): SMT algorithm based on the DPLL SAT solver but parameterized with respect to a set of Theories T. 
+Algorithm:
+Convert mixed constraints to boolean constraints
+Run DPLL, but with two changes:
+No Pure Variable Elimination optimization
+Unit Propagation uses T.setTrue, may add clauses
+Whenever T.setTrue raises an exception, add the negation of the explanation to the constraints.
+
+Changes: no pure variable elimination
+
+In pure propositional logic, variables are necessarily independent.
+So if P only appears positively, you can set P=true without loss and save time.
+With Theories, variables may be dependent.
+Consider:
+(x > 10 || x < 3) && (x > 10 || x < 9) && (x < 7)
+?x > 10? is always used positively
+But just skipping to ?x > 10? = true as part of the model leads you astray (makes the others false)!
+
+Changes: Unit propagation
+
+Consider:
+(A = B) && (B = C) && (A != C || X) 
+Convert:
+P1 && P2 && (!P3 || X)
+Unit Propagation: add P1 (A = B) to model
+Now: P2 && (!P3 || X)
+Unit Propagation: add P2 (B = C) to model
+But Wait! Theory reports: P3 (A = C) now true
+Now: (!P3 || X) && P3 ? 
+
+39: example
+
+DPLL(T) conclusion
+
+DPLL(T) is widely used as a basis for modern SMT solving.
+Typically much faster than eagerly encoding all of the variables into bits
+General: allows many types of theories. 
+Microsoft's popular and powerful Z3 automated theorem prover handles many theories, but uses DPLL(T) + Simplex for linear inequalities.
+?A Fast Linear-Arithmetic Solver for DPLL(T)?, 2006
+
+
+One slide summary: An automated theorem prover is an algorithm that determines whether a mathematical or logical proposition is valid (satisfiable). A theory is a set of sentences with a deductive system that can determine satisfiability. 
+Theorem provers are built atop decision procedures for individual theories (e.g., of arithmetic, uninterpreted functions). 
+SAT-Based Theorem Provers use SAT solvers to decompose the problem. DPLL uses efficient heuristics to solve Boolean Satisfiability (SAT) quickly in practice.
+A satisfiability modulo theories (SMT) instance is a proposition that can include logical connectives, equality, and terms from various theories. DPLL(T) is an SMT algorithm built on DPLL, a well-defined interface for Theories, and a mapping between propositional variables and Theory literals.
+
+
+\fi
+
+\section{DPLL for Satisfiability}
+
+The DPLL algorithm, named for its developers Davis, Putnam, Logemann, and Loveland, is an efficient approach to solving boolean satisfiability problems.  To use DPLL, we will take a formula $F$ and transform it into conjuctive normal form (CNF)---i.e. a conjunction of disjunctions of positive or negative literals.  For example $(a \lor \lnot b) \land (\lnot a \lor c) \land (b \lor c)$ is a CNF formula.
+
+If the formula is not already in CNF, we can put it into CNF by using De Morgan's laws, the double negative law, and the distributive laws:
+
+\[
+\begin{array}{rcl}
+\lnot(P \lor Q) & \iff & \lnot P \land \lnot Q \\
+\lnot (P \land Q) & \iff & \lnot P \lor \lnot Q \\
+\lnot \lnot P & \iff & P \\
+(P \land (Q \lor R)) & \iff & ((P \land Q) \lor (P \land R)) \\
+(P \lor (Q \land R)) & \iff & ((P \lor Q) \land (P \lor R)) \\
+\end{array}
+\]
+
+Let's illustrate DPLL by example.  Consider the following formula:
+
+\[
+(a) \land (b \lor c) \land (\lnot a \lor c \lor d) \land (\lnot c \lor d) \land (\lnot c \lor \lnot d \lor \lnot a) \land (b \lor d)
+\]
+
+There is one clause with just $a$ in it.  This clause, like all other clauses, has to be true for the whole formula to be true, so we must make $a$ true in order for the formula to be satisfiable.  We can do this whenever we have a clause with just one literal in it, i.e. a unit clause.  (Of course, if a clause has just $\lnot b$, that tells us $b$ must be false in any satisfying assignment).  In this example, we use the \textit{unit propagation} rule to replace all occurrences of a with true.  After simplifying, this gives us:
+
+\[
+(b \lor c) \land (c \lor d) \land (\lnot c \lor d) \land (\lnot c \lor \lnot d) \land (b \lor d)
+\]
+
+Now here we can see that $b$ always occurs positively (i.e. without a $\lnot$ in front of it within a CNF formula).  If we choose $b$ to be true, that eliminates all occurrences of $b$ from our formula, thereby making it simpler---but it doesn't change the satisfiability of the underlying formula.  An analogous approach applies when $c$ always occurs negatively, i.e. in the form $\lnot c$.  We say that a literal that occurs only positively, or only negatively, in a formula is \textit{pure}.  Therefore, this simplification is called the \textit{pure literal elimination} rule, and applying it to the example above gives us:
+
+\[
+(c \lor d) \land (\lnot c \lor d) \land (\lnot c \lor \lnot d)
+\]
+
+Now for this formula, neither of the above rules applies.  We just have to pick a literal and guess its value.  Let's pick $c$ and set it to true.  Simplifying, we get:
+
+\[
+(d) \land (\lnot d)
+\]
+
+After applying the unit propagation rule (setting $d$ to true) we get:
+
+\[
+(\ltrue) \land (\lfalse)
+\]
+
+which is equivalent to false, so this didn't work out.  But remember, we guessed about the value of $c$. Let's backtrack to the formula where we made that choice:
+
+\[
+(c \lor d) \land (\lnot c \lor d) \land (\lnot c \lor \lnot d)
+\]
+
+and now we'll try things the other way, i.e. with $c = \lfalse$.  Then we get the formula
+
+\[
+(d)
+\]
+
+because the last two clauses simplified to true once we know $c$ is false.  Now unit propagation sets $d = \ltrue$ and then we have shown the formula is satisfiable.  A real DPLL algorithm would keep track of all the choices in the satisfying assignment, and would report back that $a$ is true, $b$ is true, $c$ is false, and $d$ is true in the satisfying assignment.
+
+This procedure---applying unit propagation and pure literal elimination eagerly, then guessing a literal and backtracking if the guess goes wrong---is the essence of DPLL.  Here's an algorithmic statement of DPLL, adapted slightly from a version on Wikipedia:
+
+\begin{algorithmic}
+
+\Function{DPLL}{$\phi$}
+    \If{$\phi = \ltrue$}
+        \State \Return \ltrue
+    \EndIf
+    \If{$\phi$ contains a \lfalse\ clause}
+        \State \Return \lfalse
+    \EndIf
+    \ForAll{unit clauses $l$ in $\phi$}
+        \State $\phi \gets$ \Call{unit-propagate}{$l, \phi$}
+    \EndFor
+    \ForAll{literals $l$ occurring pure in $\phi$}
+        \State $\phi \gets$ \Call{pure-literal-assign}{$l, \phi$}
+    \EndFor
+    \State $l \gets$ \Call{choose-literal}{$\phi$}
+    \State \Return \Call{DPLL}{$\phi \land l$} $\lor$ \Call{DPLL}{$\phi \land \lnot l$} 
+\EndFunction
+
+\end{algorithmic}
+
+Mostly the algorithm above is straightforward, but there are a couple of notes.  First of all, the algorithm does unit propagation before pure literal assignment.  Why?  Well, it's good to do unit propagation first, because doing so can create additional opportunities to apply further unit propagation as well as pure literal assignment.  On the other hand, pure literal assignment will never create unit literals that didn't exist before.  This is because pure literal assignment can eliminate entire clauses but it never makes an existing clause shorter.
+
+Secondly, the last line implements backtracking.  We assume a short-cutting $\lor$ operation at the level of the algorithm.  So if the first recursive call to DPLL returns true, so does the current call--but if it returns fall, we invoke DPLL with the chosen literal negated, which effectively backtracks.
+
+\exercise{1}
+Apply DPLL to the following formula, describing each step (unit propagation, pure literal elimination, choosing a literal, or backtracking) and showing now it affects the formula until you prove that the formula is satisfiable or not:
+
+\[
+(a \lor b) \land (a \lor c) \land (\lnot a \lor c) \land (a \lor \lnot c) \land (\lnot a \lor \lnot c) \land (\lnot d)
+\]
+
+There is a lot more to learn about DPLL, including hueristics for how to choose the literal l to be guessed and smarter approaches to backtracking (e.g. non-chronological backtracking), but in this class, let's move on to consider SMT.
+
+
+\section{Solving SMT Problems}
+
+How can we solve a problem that involves various theories, in addition to booleans?  Consider a conjunction of the following formulas:\footnote{This example is due to Oliveras and Rodriguez-Carbonell}
+
+\[
+\begin{array}{l}
+f(f(x)-f(y)) = a \\
+f(0) = a+2 \\
+x = y \\
+\end{array}
+\]
+
+This problem mixes linear arithmetic with the theory of uninterpreted functions (here, $f$ is some unknown function).  The first step in the solution is to separate the two theories.  We can do this by replacing expressions with fresh variables, in a procedure named Nelson-Oppen after its two inventors.  For example, in the first formula, we'd like to factor out the subtraction, so we generate a fresh variable and divide the formula into two:
+
+\[
+\begin{array}{ll}
+f(e1) = a       & \textit{// in the theory of uninterpreted functions now} \\
+e1 = f(x)-f(y)  & \textit{// still a mixed formula} \\
+\end{array}
+\]
+
+Now we want to separate out $f(x)$ and $f(y)$ as variables $e2$ and $e3$, so we get:
+
+\[
+\begin{array}{ll}
+e1 = e2 - e3    & \textit{// in the theory of arithmetic now} \\
+e2 = f(x)       & \textit{// in the theory of uninterpreted functions} \\
+e3 = f(y)       & \textit{// in the theory of uninterpreted functions} \\
+\end{array}
+\]
+
+We can do the same for $f(0) = a+2$, yielding:
+
+\[
+\begin{array}{l}
+f(e4) = e5 \\
+e4 = 0 \\
+e5 = a + 2 \\
+\end{array}
+\]
+
+We now have formulas in two theories.  First, formulas in the theory of uninterpreted functions:
+
+\[
+\begin{array}{l}
+f(e1) = a \\
+e2 = f(x) \\
+e3 = f(y) \\
+f(e4) = e5 \\
+x = y \\
+\end{array}
+\]
+
+And second, formulas in the theory of arithmetic:
+
+\[
+\begin{array}{l}
+e1 = e2 - e3 \\
+e4 = 0 \\
+e5 = a + 2 \\
+x = y \\
+\end{array}
+\]
+
+Notice that $x = y$ is in both sets of formulas.  In SMT, we use the fact that equality is something that every theory understands...more on this in a moment.  For now, let's run a solver.  The solver for uninterpreted functions has a congruence closure rule that states, for all $f, x,$ and $y$, if $x = y$ then $f(x) = f(y)$.  Applying this rule (since $x=y$ is something we know), we discover that $f(x) = f(y)$.  Since $f(x) = e2$ and $f(y) = e3$, by transitivity we know that $e2 = e3$.
+
+But $e2$ and $e3$ are symbols that the arithmetic solver knows about, so we add $e2=e3$ to the set of formulas we know about arithmetic.  Now the arithmetic solver can discover that $e2-e3 = 0$, and thus $e1 = e4$.  We communicate this discovered equality to the uninterpreted functions theory, and then we learn that $a = e5$ (again, using congruence closure and transitivity).
+
+This fact goes back to the arithmetic solver, which evaluates the following constraints:
+
+\[
+\begin{array}{l}
+e1 = e2 - e3 \\
+e4 = 0 \\
+e5 = a + 2 \\
+x = y \\
+e2 = e3 \\
+a = e5 \\
+\end{array}
+\]
+
+Now there is a contradiction: $a = e5$ but $e5 = a + 2$.  That means the original formula is unsatisfiable.
+
+In this case, one theory was able to infer equality relationships that another theory could directly use.  But sometimes a theory doesn't figure out an equality relationship, but only certain correlations - e.g. e1 is either equal to e2 or e3.  In the more general case, we can simply generate a formula that represents all possible equalities between shared symbols, which would look something like:
+
+\[
+(e1 = e2 \lor e1 \neq e2) \land (e2 = e3 \lor e2 \neq e3) \land (e1 = e3 \lor e1 \neq e3) \land ...
+\]
+
+We can now look at all possible combinations of equalities.  In fact, we can use DPLL to do this, and DPLL also explains how we can combine expressions in the various theories with boolean operators such as $\land$ and $\lor$.  If we have a formula such as:
+
+\[
+x \geq 0 \land y = x + 1 \land (y > 2 \lor y < 1)
+\]
+
+(note: if we had multiple theories, I am assuming we've already added the equality constraints between them, as described above)
+
+We can then convert each arithmetic (or uninterpreted function) formula into a fresh propositional symbol, to get:
+
+\[
+p1 \land p2 \land (p3 \lor p4)
+\]
+
+and then we can run a SAT solver using the DPLL algorithm.  DPLL will return a satisfying assignment, such as $p1, p2, \lnot p3, p4$.  We then check this against each of the theories.  In this case, the theory of arithmetic finds a contradiction: $p1$, $p2$, and $p4$ can't all be true, because $p1$ and $p2$ together imply that $y \ge 1$.  We add a clause saying that these can't all be true and give it back to the SAT solver:
+
+\[
+p1 \land p2 \land (p3 \lor p4) \land (\lnot p1 \lor \lnot p2 \lor \lnot p3)
+\]
+
+Running DPLL again gives us $p1, p2, p3, \lnot p4$.  We check this against the theory of arithmetic, and it all works out.  This combination of DPLL with a theory T is called DPLL-T.
+
+We discussed above how the solver for the theory of uninterpreted functions work; how does the arithmetic solver work?  In cases like the above example where we assert formulas of the form $y = x + 1$ we can eliminate $y$ by substituting it with $x+1$ everywhere.  In the cases where we only constrain a variable using inequalities, there is a more general approach called Fourier-Motzkin Elimination.  In this approach, we take all inequalities that involve a variable x and transform them into one of the following forms:
+
+\[
+\begin{array}{c}
+A \leq x \\
+x \leq B
+\end{array}
+\]
+
+where $A$ and $B$ are linear formulas that don't include $x$.  We can then eliminate $x$, replacing the above formulas with the equation $A \leq B$. If we have multiple formulas with $x$ on the left and/or right, we just conjoin the cross product.  There are various optimizations that are applied in practice, but the basic algorithm is general and provides a broad understanding of how arithmetic solvers work.
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
