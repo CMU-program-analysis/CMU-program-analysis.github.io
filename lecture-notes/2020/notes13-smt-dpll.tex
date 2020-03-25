@@ -482,61 +482,6 @@ the basic algorithm is general and provides a broad understanding of how
 arithmetic solvers work.
 
 
-\iffalse
-\section{Claire notes}
-
-
-35 is then example 
-
-DPLL(T): DPLL(T): SMT algorithm based on the DPLL SAT solver but parameterized with respect to a set of Theories T. 
-Algorithm:
-Convert mixed constraints to boolean constraints
-Run DPLL, but with two changes:
-No Pure Variable Elimination optimization
-Unit Propagation uses T.setTrue, may add clauses
-Whenever T.setTrue raises an exception, add the negation of the explanation to the constraints.
-
-Changes: no pure variable elimination
-
-In pure propositional logic, variables are necessarily independent.
-So if P only appears positively, you can set P=true without loss and save time.
-With Theories, variables may be dependent.
-Consider:
-(x > 10 || x < 3) && (x > 10 || x < 9) && (x < 7)
-?x > 10? is always used positively
-But just skipping to ?x > 10? = true as part of the model leads you astray (makes the others false)!
-
-Changes: Unit propagation
-
-Consider:
-(A = B) && (B = C) && (A != C || X) 
-Convert:
-P1 && P2 && (!P3 || X)
-Unit Propagation: add P1 (A = B) to model
-Now: P2 && (!P3 || X)
-Unit Propagation: add P2 (B = C) to model
-But Wait! Theory reports: P3 (A = C) now true
-Now: (!P3 || X) && P3 ? 
-
-39: example
-
-DPLL(T) conclusion
-
-DPLL(T) is widely used as a basis for modern SMT solving.
-Typically much faster than eagerly encoding all of the variables into bits
-General: allows many types of theories. 
-Microsoft's popular and powerful Z3 automated theorem prover handles many theories, but uses DPLL(T) + Simplex for linear inequalities.
-?A Fast Linear-Arithmetic Solver for DPLL(T)?, 2006
-
-
-One slide summary: An automated theorem prover is an algorithm that determines whether a mathematical or logical proposition is valid (satisfiable). A theory is a set of sentences with a deductive system that can determine satisfiability. 
-Theorem provers are built atop decision procedures for individual theories (e.g., of arithmetic, uninterpreted functions). 
-SAT-Based Theorem Provers use SAT solvers to decompose the problem. DPLL uses efficient heuristics to solve Boolean Satisfiability (SAT) quickly in practice.
-A satisfiability modulo theories (SMT) instance is a proposition that can include logical connectives, equality, and terms from various theories. DPLL(T) is an SMT algorithm built on DPLL, a well-defined interface for Theories, and a mapping between propositional variables and Theory literals.
-
-
-\fi
-
 
 
 \end{document}
