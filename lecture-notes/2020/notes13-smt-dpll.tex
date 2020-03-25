@@ -290,12 +290,11 @@ will see below.
 
 \subsection{Basic SMT idea, illustrated}
 
-
-We will work through our example above to demonstrate. The first step is to
-separate the multiple theories. We can do this by replacing expressions with
-fresh variables, in a procedure named Nelson-Oppen after its two inventors. For
-example, in the first formula, we'd like to factor out the subtraction, so we
-generate a fresh variable and divide the formula into two:
+We will work through our example above to demonstrate the ideas behind SMT. The
+first step is to separate the multiple theories. We can do this by replacing
+expressions with fresh variables, in a procedure named Nelson-Oppen after its
+two inventors. For example, in the first formula, we'd like to factor out the
+subtraction, so we generate a fresh variable and divide the formula into two:
 
 \[
 \begin{array}{ll}
@@ -348,12 +347,10 @@ x = y \\
 \end{array}
 \]
 
-Notice that $x = y$ is in both sets of formulas. In SMT, we use the fact that
-equality is something that every theory understands...more on this in a moment.
-
-
-For now, let's run a solver. The solver for uninterpreted functions has a
-congruence closure rule that states, for all $f, x,$ and $y$, if $x = y$ then
+Notice that $x = y$ is in both sets of formulas. We will use the fact that
+equality is smoething that every theory understands, in a moment. First,
+however, For now, let's run a solver. The solver for uninterpreted functions has
+a congruence closure rule that states, for all $f, x,$ and $y$, if $x = y$ then
 $f(x) = f(y)$. Applying this rule (since $x=y$ is something we know), we
 discover that $f(x) = f(y)$. Since $f(x) = e2$ and $f(y) = e3$, by transitivity
 we know that $e2 = e3$.
@@ -378,37 +375,66 @@ a = e5 \\
 \end{array}
 \]
 
-Now there is a contradiction: $a = e5$ but $e5 = a + 2$.  That means the original formula is unsatisfiable.
+Now there is a contradiction: $a = e5$ but $e5 = a + 2$. That means the original
+formula is unsatisfiable.
 
-In this case, one theory was able to infer equality relationships that another theory could directly use.  But sometimes a theory doesn't figure out an equality relationship, but only certain correlations - e.g. e1 is either equal to e2 or e3.  In the more general case, we can simply generate a formula that represents all possible equalities between shared symbols, which would look something like:
+In this case, one theory was able to infer equality relationships that another
+theory could directly use. But sometimes a theory doesn't figure out an equality
+relationship, but only certain correlations, e.g., e1 is either equal to e2 or
+e3. In the more general case, we can simply generate a formula that represents
+all possible equalities between shared symbols, which would look something like:
 
 \[
 (e1 = e2 \lor e1 \neq e2) \land (e2 = e3 \lor e2 \neq e3) \land (e1 = e3 \lor e1 \neq e3) \land ...
 \]
 
-We can now look at all possible combinations of equalities.  In fact, we can use DPLL to do this, and DPLL also explains how we can combine expressions in the various theories with boolean operators such as $\land$ and $\lor$.  If we have a formula such as:
+We can now look at all possible combinations of equalities. In fact, we can use
+DPLL to do this, and DPLL also explains how we can combine expressions in the
+various theories with boolean operators such as $\land$ and $\lor$. If we have a
+formula such as:
 
 \[
 x \geq 0 \land y = x + 1 \land (y > 2 \lor y < 1)
 \]
 
-(note: if we had multiple theories, I am assuming we've already added the equality constraints between them, as described above)
+(note: if we had multiple theories, I am assuming we've already added the
+equality constraints between them, as described above)
 
-We can then convert each arithmetic (or uninterpreted function) formula into a fresh propositional symbol, to get:
+We can then convert each arithmetic (or uninterpreted function) formula into a
+fresh propositional symbol, to get:
 
 \[
 p1 \land p2 \land (p3 \lor p4)
 \]
 
-and then we can run a SAT solver using the DPLL algorithm.  DPLL will return a satisfying assignment, such as $p1, p2, \lnot p3, p4$.  We then check this against each of the theories.  In this case, the theory of arithmetic finds a contradiction: $p1$, $p2$, and $p4$ can't all be true, because $p1$ and $p2$ together imply that $y \ge 1$.  We add a clause saying that these can't all be true and give it back to the SAT solver:
+and then we can run a SAT solver using the DPLL algorithm. DPLL will return a
+satisfying assignment, such as $p1, p2, \lnot p3, p4$. We then check this
+against each of the theories. In this case, the theory of arithmetic finds a
+contradiction: $p1$, $p2$, and $p4$ can't all be true, because $p1$ and $p2$
+together imply that $y \ge 1$. We add a clause saying that these can't all be
+true and give it back to the SAT solver:
 
 \[
 p1 \land p2 \land (p3 \lor p4) \land (\lnot p1 \lor \lnot p2 \lor \lnot p3)
 \]
 
-Running DPLL again gives us $p1, p2, p3, \lnot p4$.  We check this against the theory of arithmetic, and it all works out.  This combination of DPLL with a theory T is called DPLL-T.
+Running DPLL again gives us $p1, p2, p3, \lnot p4$. We check this against the
+theory of arithmetic, and it all works out.
 
-We discussed above how the solver for the theory of uninterpreted functions work; how does the arithmetic solver work?  In cases like the above example where we assert formulas of the form $y = x + 1$ we can eliminate $y$ by substituting it with $x+1$ everywhere.  In the cases where we only constrain a variable using inequalities, there is a more general approach called Fourier-Motzkin Elimination.  In this approach, we take all inequalities that involve a variable x and transform them into one of the following forms:
+\subsection{DPLL(T)} 
+
+ This combination of DPLL with a
+theory T is called DPLL-T.
+
+\subsection{Bonus: Arithmetic solvers}
+
+We discussed above how the solver for the theory of uninterpreted functions
+work; how does the arithmetic solver work? In cases like the above example where
+we assert formulas of the form $y = x + 1$, we can eliminate $y$ by substituting
+it with $x+1$ everywhere. In the cases where we only constrain a variable using
+inequalities, there is a more general approach called Fourier-Motzkin
+Elimination. In this approach, we take all inequalities that involve a variable
+x and transform them into one of the following forms:
 
 \[
 \begin{array}{c}
@@ -417,107 +443,16 @@ x \leq B
 \end{array}
 \]
 
-where $A$ and $B$ are linear formulas that don't include $x$.  We can then
+where $A$ and $B$ are linear formulas that don't include $x$. We can then
 eliminate $x$, replacing the above formulas with the equation $A \leq B$. If we
 have multiple formulas with $x$ on the left and/or right, we just conjoin the
-cross product.  There are various optimizations that are applied in practice,
-but the basic algorithm is general and provides a broad understanding of how
+cross product. There are various optimizations that are applied in practice, but
+the basic algorithm is general and provides a broad understanding of how
 arithmetic solvers work.
 
 
 \iffalse
 \section{Claire notes}
-
-A theory: set of functions and predicate symbols (sentences, or syntax) and definitions for symbol meanings (semantics, or a deductive system that determines satisfiability).
-Usually, sentences formally defined by a grammar of terms over atoms. 
-Consider primarily theories reasoning about conjunctions of literals, like:
-0, 1, -1, 2, -3, ?, +, -, =, < (usual meanings; ?theory of integers with arithmetic? or ?Presburger arithmetic?)
-=, · (axioms of transitivity, anti-symmetry, and 8x. 8y. x · y Ç y ·  x ; ?theory of total orders?)
-sel, upd (McCarthy?s ?theory of lists?) 
-A satisfying assignment (model, interpretation) maps literals (terms/negated terms) to booleans.
-
-
-
-Decision procedure for theories:
-The Decision Problem: Decide whether a formula in a theory with first-order logic is true.
-Example: Decide ?8x. x>0 ) (9y. x=y+1)? in {N, +, =, >}
-A theory is decidable when there is an algorithm that solves the decision problem.
-This algorithm is the decision procedure for that theory.
-
-Decide whether a conjunction of literals in the theory is satisfiable
-Factors out the first-order logic part
-The decision problem can be reduced to the satisfiability problem
-Parameters for 8, skolem functions for 9, negate and convert to DNF (sorry; I won?t explain this here)
-?Easiest? Theory = Propositional Logic = SAT
-A decision procedure for it is a ?SAT solver?
-
-
-Example slide 26
-
-We?ve seen how to handle arbitrary boolean expressions of boolean variables.
-There are many other theories, like: 
-Linear Inequalities: Given a finite set of variables V and a finite set of real-valued constants C: 
-Term ::= C1V1 + ? + CnVn <= Cn+1
-Can be decided via Simplex
-Equality and uninterpreted functions: Given a finite set of predicate symbols P (each of which has an associated arity)
-Predicate ::= Pi(Predicate1, ? Predicaten)
-Term ::= 	Predicate | Predicate1 = Predicate2
-
-
-Recall separation of concerns: 
-#1 Prover handles connectives (8, Æ, ))
-#2 Sat procs handle literals (+, ·, 0, head)
-Idea: reduce proof obligation into propositional logic, feed to SAT solver (CVC)
-To Prove: 3*x=9 ) (x = 7 Æ x · 4)
-Becomes Prove: A ) (B Æ C)
-Becomes Unsat: A Æ :(B Æ C)
-Becomes Unsat: A Æ (:B Ç :C)
-
-Motivation: mixed theories
-
-What about:  (strlen(x) + y <= 5) => (strcat(x,x) != ?abba?) 
-Satisfied by {x = ?abc?, y = 3}, for example
-We may have a sat procedure for each theory involved in a theorem, but combination is much harder.
-We can?t just separate out the terms from each to see if they are separately satisfiable, because it?s unsound: equi-sat ? equivalent.
-The problem is that the two satisfying assignments may be incompatible
-
-Beyond basic logic, we want to reason about
-Strings: strlen(x), regexp_match(x, ?[0-9]+?), ...
-Equality: a = b => f(a) = f(b), ...
-Linear Arithmetic: 2x+3y <= 10, ?
-Bitvectors: (x >> 2) | y == 0xff, ?
-Lists: head(cons(p,q)) = p 
-All at the same time!
-Handle each domain separately (as a theory) and then combine them all together using DPLL and SAT as the ?glue?.
-
-A satisfiability modulo theories (SMT) solver operates on propositions involving both logical terms and terms from theories. 
-Modern SMT solvers can use any theory that satisfies a particular interface.
-Replace Theory clauses with special propositional variables. 
-Use a pure SAT solver. If the solution involves some theory clauses, ask the Theory if they can all be true. If not, add constraints and restart.
-
-
-Given a query like (x > 5) && (p || (x < 4)) && !p
-Almost everything can be handled by SAT:
-(x > 5) && (p || (x < 4)) && !p
-Only the highlighted parts require a Theory.
-So ask SAT to consider:
-T1 && (p || T2) && !p
-And then whenever SAT gives a model, ask the theories if that model makes sense.
-
-
-
-33-34 has architecture/theory interface
-
-interface:
-
-Initialize(universe : Literal Set)
-SetTrue(l : Literal) : Literal Set
-Raise exception if l is inconsistent. Otherwise, add l to set of known facts. Return newly implied set of true facts (e.g., ?a=c? after ?a=b? and ?b=c?)
-Backtrack(n : Nat)
-Forget last n facts from ?SetTrue?. 
-IsDefinitelyTrue(l : Literal) : Bool
-Explanation(l : Literal) : Literal Set
-If l is true, return a model (proof) of it. 
 
 
 35 is then example 
