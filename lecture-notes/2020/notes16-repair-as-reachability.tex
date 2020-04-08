@@ -1,0 +1,116 @@
+\documentclass[11pt]{article}
+\usepackage{../../tex/math-cmds}
+\usepackage{../../tex/analysis}
+\usepackage{IEEEtrantools}
+\usepackage{mathabx}
+\usepackage{upgreek}
+
+
+\title{Lecture Notes: Program Repair as Reachability}
+\author{17-355/17-665/17-819: Program Analysis (Spring 2020)\\
+  Claire Le Goues\footnote{These notes draw from Nguyen et al., ``Connecting
+    Program Synthesis and Reachability: Automatic Program Repair using
+    Test-Input Generation'', TACAS 2017~\cite{tacas2017} and
+    a set of course materials generously provided by Wes Weimer.}\\
+  {\tt clegoues@cs.cmu.edu}} 
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+Over the past several units, we have moved in this course from addressing
+\emph{verification} to addressing \emph{synthesis}.  The former problem is the
+task of validating correctness with respect to a specification; the latter
+is the task of generating a program tha meets a required specification.  We then
+moved to applying ideas from synthesis to the problem of program \emph{repair},
+or modifying an existing program that fails to meet a provided specification so
+that it does in fact satisfy it. 
+
+You may have noticed that there are several useful correspondances between
+techniques we have used for verification and those we then explored for
+synthesis and repair.  For example, verification condition generation began as a
+method to prove programs correct; generating these conditions forwards rather
+than backwards allowed us to develop a way to generalize testing through
+symbolic execution; we could then use symbolic/concolic execution as a way to
+perform synthesis for repair of certain types of defects.  
+
+Today, we will explore a formal connection between program synthesis (for
+repair, specifically) and verification, formulated as a \emph{reachability}
+problem.  
+
+\section{Problem Domain} 
+
+\subsection{Template-based program synthesis for repair}
+
+One general way to formulate program repair as we discussed it last week is as a
+problem of selecting and appropriately instantiating one or more \emph{repair
+  templates} at the appropriate points in a program. We define a general syntax
+for a templated program along the following lines (borrowing from the \WhileLang
+syntax, but simplifying for the purposes of this discussion):
+
+
+\newcommand\df{\bnfdef}
+\newcommand\da{\bnfalt}
+\newcommand\skips{\mbox{skip}}
+\newcommand\ifs{\mbox{if}~ P ~\mbox{then}~ S_1 ~\mbox{else}~ S_2}
+\newcommand\whiles{\mbox{while}~ P ~\mbox{do}~ S}
+
+\[
+\begin{array}{llllllllllllll}
+
+S & \df & x := a    & a & \df & a_1 + a_2 \\
+  & \da & \skips    &   & \da & a_1 - a_2 \\ 
+  & \da & S_1;~ S_2 &   & \da & \fbox{$\displaystyle c_i $} \\
+  & \da & \ifs      &   & \da & \ldots
+  & \da & \whiles   &   & \\
+\end{array}
+\]
+
+
+Given a templated program with template parameters $c_1 \ldots c_n$ and given
+template values $\bar{v} = v_1 \ldots v_n$ (corresponding to expressions or
+constants), we can \emph{instantiate} that emplate on those values to yield a
+non-templated program.  We can define instantiation in a straightforward,
+syntax-directed way:
+
+\begin{center}
+\[
+\begin{array}{lcl}
+inst(\mbox{skip}, \bar{v}) & \rightarrow & \mbox{skip} \\
+inst(S_1; S_2, Q) & \rightarrow & inst(S_1, \bar{v}); inst(S_2, \bar{v}) \\
+inst(x := a, \bar{v}) & \rightarrow & x = inst(a, \bar{v}) \\
+inst(\fbox{$\displaystyle c_i $}, \bar{v}) & \rightarrow & v_i 
+\end{array}
+\]
+\end{center}
+
+The \emph{template-based program synthesis problem} is then defined as follows: 
+\begin{blockquote}
+  Given a templated program $P$ with template parameters $c_1\ldots c_n$, and a
+  set $T$ of input-output pairs (tests), do there exist template values
+  $\bar{v}=v_1 \ldots v_n$ such that for all
+  ${ < \alpha_0, \beta_0 > \ldots < \alpha_n, \beta_n > }$ in a $T$,
+  $\forall \alpha_i. inst(P,\bar{v}) = \beta_i$?
+\end{blockquote}
+
+Note that we are ambivalent as to the mechanism used to identify $\bar{v}$, and
+that many of the inductive techniques we have discussed either for synthesis
+proper or for program repair specifically fit in this framing (consider
+syntax-guided synthesis). 
+
+We can extend this representation of this problem to program repair by
+constructing templated programs from the original program and replacing
+potentially buggy lines with potential template \fbox{$\displaystyle c_i $}; by
+synthesizing some code to fill arbitrary hole, the repair effectively becomes
+``delete buggy statement X and replace with instantiated template Y.'' 
+
+
+\subsection{Program Reachability}
+
+
+\bibliographystyle{abbrv}
+\bibliography{repair}
+
+\end{document}
