@@ -10,7 +10,7 @@
 \author{17-355/17-665/17-819: Program Analysis (Spring 2020)\\
   Claire Le Goues\footnote{These notes draw from Nguyen et al., ``Connecting
     Program Synthesis and Reachability: Automatic Program Repair using
-    Test-Input Generation'', TACAS 2017~\cite{tacas2017} and
+    Test-Input Generation'', TACAS 2017 and
     a set of course materials generously provided by Wes Weimer.}\\
   {\tt clegoues@cs.cmu.edu}} 
 
@@ -19,35 +19,25 @@
 \begin{document}
 
 \maketitle
-
-Over the past several units, we have moved in this course from addressing
-\emph{verification} to addressing \emph{synthesis}.  The former problem is the
-task of validating correctness with respect to a specification; the latter
-is the task of generating a program that meets a required specification.  We then
-moved to applying ideas from synthesis to the problem of program \emph{repair},
-or modifying an existing program that fails to meet a provided specification so
-that it does in fact satisfy it. 
-
-There are useful correspondences between
-techniques we have used for verification and those we then explored for
-synthesis and repair.  For example, verification condition generation began as a
-method to prove programs correct; generating these conditions forwards rather
-than backwards allowed us to develop a way to generalize testing through
-symbolic execution; we could then use symbolic/concolic execution as a way to
-perform synthesis for repair of certain types of defects.  
+There are useful correspondences between techniques we have used for
+verification and those we then explored for synthesis and repair. For example,
+verification condition generation began as a method to prove programs correct;
+generating these conditions forwards rather than backwards allowed us to develop
+a way to generalize testing through symbolic execution; we could then use
+symbolic/concolic execution as a way to perform synthesis for repair of certain
+types of defects.
 
 Today, we will explore a formal connection between program synthesis (for
 repair, specifically) and verification, formulated as a \emph{reachability}
-problem.  
+problem.
 
 \section{Template-based program synthesis for repair}
 
-One general way to formulate program repair as we discussed it last week is as a
-problem of selecting and appropriately instantiating one or more \emph{repair
-  templates} at the appropriate points in a program. We define a general syntax
-for a templated program along the following lines (borrowing from the \WhileLang
-syntax, but simplifying for the purposes of this discussion):
-
+One general way to formulate program repair is as a problem of selecting and
+appropriately instantiating one or more \emph{repair templates} at the
+appropriate points in a program. We define a general syntax for a templated
+program along the following lines (borrowing from the \WhileLang syntax, but
+simplifying somewhat for the purposes of this discussion):
 
 \newcommand\df{\bnfdef}
 \newcommand\da{\bnfalt}
@@ -69,15 +59,15 @@ S & \df & x := a    & a & \df & a_1 + a_2 \\
 
 Given a templated program with template parameters $c_1 \ldots c_n$ and given
 template values $\bar{v} = v_1 \ldots v_n$ (corresponding to expressions or
-constants), we can \emph{instantiate} that emplate on those values to yield a
-non-templated program.  We can define instantiation in a straightforward,
+constants), we can \emph{instantiate} thatt emplate on those values to yield a
+non-templated program. We can define instantiation in a straightforward,
 syntax-directed way:
 
 \begin{center}
 \[
 \begin{array}{lcl}
 inst(\mbox{skip}, \bar{v}) & \rightarrow & \mbox{skip} \\
-inst(S_1; S_2, Q) & \rightarrow & inst(S_1, \bar{v}); inst(S_2, \bar{v}) \\
+inst(S_1; S_2, \bar{v}) & \rightarrow & inst(S_1, \bar{v}); inst(S_2, \bar{v}) \\
 inst(x := a, \bar{v}) & \rightarrow & x = inst(a, \bar{v}) \\
 inst(\fbox{$\displaystyle c_i $}, \bar{v}) & \rightarrow & v_i 
 \end{array}
@@ -89,8 +79,8 @@ The \emph{template-based program synthesis problem} is then defined as follows:
   Given a templated program $P$ with template parameters $c_1\ldots c_n$, and a
   set $T$ of input-output pairs (tests), do there exist template values
   $\bar{v}=v_1 \ldots v_n$ such that for all
-  ${ \langle \alpha_0, \beta_0 \rangle \ldots \langle \alpha_n, \beta_n \rangle }$ in $T$,
-  $(inst(P,\bar{v}))(\alpha_i) = \beta_i$?
+  ${ \langle \alpha_0, \beta_0 \rangle \ldots \langle \alpha_n, \beta_n \rangle
+  }$ in $T$, $(inst(P,\bar{v}))(\alpha_i) = \beta_i$?
 \end{quote}
 
 Note that we are ambivalent as to the mechanism used to identify $\bar{v}$, and
@@ -98,17 +88,19 @@ that many of the inductive techniques we have discussed either for synthesis
 proper or for program repair specifically fit in this framing (consider
 syntax-guided synthesis). 
 
-We can extend this representation of this problem to program repair by
-constructing templated programs from the original program and replacing
-potentially buggy lines with potential template \fbox{$\displaystyle c_i $}. By
-synthesizing some code to fill arbitrary hole, the repair effectively becomes
-``delete buggy statement X and replace with instantiated template Y.'' 
+We can extend this representation to program repair by constructing templated
+programs from the original program and replacing potentially buggy lines with
+potential template \fbox{$\displaystyle c_i $}. By synthesizing some code to
+fill arbitrary hole, the repair effectively becomes ``delete buggy statement X
+and replace with instantiated template Y.'' Overall, these templates
+focus on expression-level manipulation; extending this framing to
+statement-level modifications is an open problem. 
 
-For the purposes of this exposition, we focus on single-edit repairs with
-templates encoding linear combinations of variables; more complicated (e.g.,
-non-linear) templates are usable as well.  These templates, like the
-synthesis-based repair techniques we have discussed, focus on expression-level
-manipulation. 
+For the purposes of this exposition, we ignore fault localization, focus on
+single-edit repairs, and on templates encoding linear combinations of variables.
+Actual repair based on these ideas generalizes by trying several
+locations/templates in some order. More complicated (e.g., non-linear) templates
+are usable as well.
 
 \section{Program Reachability}
 
@@ -117,16 +109,16 @@ given a program $P$, a set of program variables $x_1 \ldots x_n$ and some
 program label $L$, do there exist values $c_1 ... c_n$ such that $P$ with
 $x_i = c_i$ reaches label $L$ in finite time?
 
-We have seen this applied to finding bugs using symbolic execution (e.g., formulating
-buffer overflows as reaching an error state via program transformation); test
-generation can be viewed as generating $c_i$ for test inputs with $L$
-corresponding to the end of a desired execution path.  It is
-also used in model checking, as we will see in future course lessons.  
+We have seen this applied to finding bugs using symbolic execution (e.g.,
+formulating buffer overflows as reaching an error state via program
+transformation). Test generation can also be viewed as generating $c_i$ for test
+inputs with $L$ corresponding to the end of a desired execution path. It is also
+applicable to model checking, as we will see in future course lessons.
 
 The following code example revisits the idea/intuition, calling back to our
 prior discussions on test generation:
 
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[language=C,basicstyle=\footnotesize,numbers=left]
 int x, y; /* global input */
 int P() { 
 if (2 * x == y) {
@@ -138,20 +130,17 @@ if (2 * x == y) {
 
 Here, $x = -20, y=-40$ reaches the label. 
 
-Note that both of these problems are undecidable in general.  
-The ``heart'' of reachability involves solving all path constraints; 
-each condition makes it harder to find a single consistent set of values.  By
-The ``heart'' of synthesis is handling all tests, where each test makes it 
-harder to find a single consistent set of values
-
 \section{Reducing Synthesis To Reachability}
 
-You may recall how reductions work from prior theory or algorithms courses.  
-In brief, Problem A is reducible to Problem B if an efficient algorithm for B
-could be used as a subroutine to solve A efficiently. A \emph{gadget} is a subset of a
-problem instance that simulates the behavior of one of the fundamental units of
-a different problem.
+Both reachability and synthesis are undecidable in general. You may recall how
+reductions work from prior theory or algorithms courses. In brief, Problem A is
+reducible to Problem B if an efficient algorithm for B could be used as a
+subroutine to solve A efficiently. A \emph{gadget} is a subset of a problem
+instance that simulates the behavior of one of the fundamental units of a
+different problem.
 
+
+\subsection{Defining GadgetS2R}
 Thus, given an instance of a synthesis (repair) problem, and assuming we have an
 oracle that can solve reachability, let us convert the synthesis instance into a
 reachability instance. If we can do this efficiently, any existing reachability
@@ -163,96 +152,184 @@ Give $Q$, a template program with a set of template parameters $S = \{ c_1,
   construct $GadgetS2R(Q,S,T)$ which returns a new program $P$ with a special
   location $L$, as follows:
 
-\begin{itemize}
-\item For every template parameter $c_i$, add a fresh global variable $v_i$.  A
-  solution to this reachability instance is an assignment of concrete values
+\begin{enumerate}
+\item For every template parameter $\bar{c_i}$, add a fresh global variable $v_i$. A
+  solution to the reachability instance is an assignment of concrete values
   $c_i$ to variables $v_i$.
 \item For every function $q \in Q$, define a similar function $q_{P} \in P$.
-  The body of $q_p$ is the same as $q$, but with every reference to a template
-  parameter $c_i$ replace with a reference to the corresponding new variable $v_i$
+  The body of $q_P$ is the same as $q$, but with every reference to a template
+  parameter $\bar{c_i}$ replaced with a reference to the corresponding new variable $v_i$
 \item $P$ also contains a starting function $main_P$ that encodes the
   specification information from the test suite $T$ as a conjunctive expression
   $e$:
 
 $e = \bigwedge\limits_{(\alpha_i,\beta_i) \in T} main_{QP}(\alpha_i) = \beta_i$
 
-where $main_{qp}$ is a function in $P$ corresponding to the starting function
-$main_Q$ in $Q$.  In addition, the body of $main_P$ is one conditional statement that
+where $main_{QP}$ is a function in $P$ corresponding to the starting function
+$main_Q$ in $Q$.  The body of $main_P$ is then a single conditional statement that
 leads to a fresh target location $L$ iff $e$ is true.  
-\item $P$ then consists of the declaration of new variables, the functions
+\item $P$ overall consists of the declaration of new variables, the functions
   $q_P$, and the starting function $main_P$
-\end{itemize}
+\end{enumerate}
 
-\vspace{1ex}
-\emph{we turn to slides to demonstrate $GadgetS2R$ for synthesis-to-reachability.}
-\vspace{1ex}
+\subsection{Illustrative example}
 
-We can also reduce reachability to synthesis, declaring new template variables
-for each variable; replacing all variables with a read from the template
-parameter and removing declarations of variables $v_i$, and raising an exception
-(or encoding success in some other way) at the location in $Q$ corresponding to
-the location $L$ in $P$; by catching the exception and returning some known
-signal value (like, say, 1), we can encode a single test case for the synthesis problem
-corresponding to ``the function returns 1.'' 
+Consider the code sample we used in discussing semantics-based program repair:
+
+\begin{lstlisting}[language=C,basicstyle=\footnotesize,numbers=left]
+int is_upward(int in, int up, int down) {
+  int bias, r;
+  if (in)
+    bias = down; // fix: bias = up + 100
+  else
+    bias = up;
+  
+  if (bias > down)
+    r = 1;
+  else
+    r = 0;
+  return r
+  }
+\end{lstlisting}
+
+And a set of test cases that highlight the bug:
+
+\begin{tabular}{l|rrr|rr|r}
+\toprule
+   & \multicolumn{3}{c}{\textbf{Inputs}} & \multicolumn{2}{c}{\textbf{Output}} &  \\
+Test & in   & up  & down & expected & observed & Passed? \\\midrule
+1    & 1 & 0 & 100 & 0 & 0 & Yes \\
+2    & 1 & 11 & 110 & 1 & 0 & No \\
+3    & 0 & 100 & 50 & 1 & 1 & Yes \\
+4    & 1 & -20 & 60 & 1 & 0 & No \\
+5    & 0 & 0 & -10 & 1 & 1 & Yes \\
+\bottomrule
+\end{tabular}
+
+Assuming we select the buggy line and attempt a linear combination of variables
+as a template, this transforms the buggy code into a templated program as so:
+
+
+\begin{lstlisting}[language=C,basicstyle=\footnotesize,numbers=left]
+int is_upward(int in, int up, int down) {
+  int bias, r;
+  if (in)
+    bias = c0 + c1 * bias + c2 * in + c3 * up + c4 * down;
+  else
+    bias = up;
+  
+  if (bias > down)
+    r = 1;
+  else
+    r = 0;
+  return r;
+  }
+\end{lstlisting}
+
+
+The reachability instance corresponding to this program then looks like:
+
+
+
+\begin{lstlisting}[language=C,basicstyle=\footnotesize,numbers=left]
+int c0, c1, c2, c3, c4; /* global input */
+
+int P_is_upward(int in, int up, int down) {
+  int bias, r;
+  if (in)
+    bias = c0 + c1 * bias + c2 * in + c3 * up + c4 * down;
+  else
+    bias = up;
+  
+  if (bias > down)
+    r = 1;
+  else
+    r = 0;
+  return r;
+}
+int main () {
+  if (p_is_upward(1,0,100) == 0 &&
+      p_is_upward(1,11,110) == 1 &&
+      p_is_upward(0,100,50) == 1 &&
+      p_is_upward(1,-20,60) == 1 &&
+      p_is_upward(0,0,10) == 0 &&
+      p_is_upward(0,0,-10) == 1) {
+   [L] // label!
+  } 
+  return 0;
+}
+\end{lstlisting}
+
+A valid solution to the reachability problem identifies global inputs \texttt{c0
+  = 100, c1 = 0, c2 = 0, c3 = 1, c4 = 0}; this corresponds to instantiating the
+template on line 4 with \texttt{bias = up + 100;}, a valid patch for this bug. 
+
 
 \section{Proof of correctness}
 
 To prove the correctness of this reduction, we must show that the constructed
 reachability instance is solvable (with values $c_1 \ldots c_n$) iff the original
-synthesis instance is solvable (with values $c_1 \ldots c_n$).
+synthesis instance is solvable (with those same values). 
  %
-The reachability instance is solved if those values cause execution to reach L. 
-The synthesis instance is solved if those values cause every test to pass.
+The reachability instance is solved if those values cause execution to reach L,
+while the synthesis instance is solved if those same values cause every test to
+pass.
 
 The proof uses standard operational semantics to reason about the meaning and
-executions of programs.  As in the past, we use $\Downarrow$ for large-step
-judgements and $\rightarrow$ for small step.  The proof uses large-step
-semantics to reason about synthesis, which focuses on the final value of the
-program (its behavior on a test).  It uses small-step semantics to reason about
-reacability, where the intermediate steps matter (was a particular label
-reached?).  It uses induction on the structure of a derivation to show that a
-property holds fo rall exeuctions of all programs, and weakest preconditions
-to reason about the special conditional statements that encode test cases.  
+executions of programs. We use large-step semantics ($\Downarrow$) to reason
+about synthesis, which focuses on the final value of the program (its behavior
+on a test). W uses small-step semantics ($\rightarrow$) to reason about
+reachability, where the intermediate steps matter (was a particular label
+reached?). The proof uses induction on the structure of a derivation to show
+that a property holds for all exeuctions of all programs, and weakest
+preconditions to reason about the special conditional statements that encode
+test cases.
 
 The high-level proof structure is as follows:
 \begin{itemize}
-\item Lemma 1. The reachability instance method and the synthesis instance
-  method agree on all (non-template) variables.  
-\item Lemma 2. If the reachability instance reaches L from a state S (with
-  values $c_1\ ldots c_n$), then that state and values model the weakest precondition of
-  the synthesis instance method passing each test. 
+\item Lemma 1: The reachability instance method and the synthesis instance
+  method agree on the values of all (non-template) variables.
+\item Lemma 2: If the reachability instance reaches L from a state S (with
+  values $c_1\ ldots c_n$), then that state and values model the weakest
+  precondition of the synthesis instance method passing each test.
 \item Theorem 1. The synthesis instance is solvable iff the reachability
   instance is solvable (with the same values). 
 \end{itemize}
 
 \vspace{1ex}
-\emph{again, slides can demonstrate this correspondence.} 
-
-
 
 \subsection{Lemma 1: Agree on Vars}
 
 The idea here is to show that the derived program ($p_q(\alpha_i)$) behaves the
-same as the original program $q[c_q,...,c_n](\alpha_i)$ when the new variables $v_i$ in $P$ are
-assigned to the values $c_i$.  Formally:
+same as the original program $q[c_0,\ldots,c_n](\alpha_i)$\footnote{$q[c_0,\ldots,c_n]$ is another way of saying ``q instantiated on $c_0,\ldots,c_n$''} when the new variables
+$v_i$ in $P$ are assigned the values $c_i$. 
 
-Let $Q$ be the input synthesis instance method with template variables $v_1 \ldots
-v_n$.  Let $P = GadgetS2R(Q)$ be the reachability instance corresponding to method
-$P$.  For all states $E_1, E_2, E_3$, all values $c_1, \ldots
-c_n$, all inputs values $x$, it holds that:
+Formally, let $Q$ be the input synthesis instance method with template variables
+$v_1 \ldots v_n$. Let $P = GadgetS2R(Q)$ be the reachability instance
+corresponding to method $P$. For all states $E_1, E_2, E_3$, all values
+$c_1, \ldots c_n$, all input values $x$, we seek to prove that it holds that:
 
 \begin{quote}
-  if $E_1(v_i) = c_i$, then $D_1:: \langle P(x), E_1\rangle \Downarrow E_2$ iff
-$D_2:: \langle inst(Q,\bar{c}), E_1 \rangle \Downarrow E_3$ and $\forall y \neq v_i,
-E_2(y) = E_3(y)$.
+  if $E_1(v_i) = c_i$, then $D_1 :: \langle P(x), E_1\rangle \Downarrow E_2$ iff \\
+  $D_2 :: \langle inst(Q,\bar{c}), E_1 \rangle \Downarrow E_3$ \\
+  and $\forall y \neq v_i, E_2(y) = E_3(y)$.
 \end{quote}
 
-The proof proceeds by induction on the structure of the operational semantics
-derivation $D_1$. By inversion, the structure of $D_1$ corresponds exactly to the
-structure of $D_2$ except for the template variables.
+The proof proceeds by induction on the structure of an operational semantics
+derivation $D_1$. Let $E_1$ be arbitrary, except with $E_1(v_i) = c_i$.
+Importantly, every $p_q(i) \in P$ corresponds to $q[c_1,\ldots,c_n](e) \in Q$,
+in the sense that all subexpressions in $p_q$ and $q$ are identical
+\emph{except} that references to template parameters \fbox{$\displaystyle c_i $} in $Q$
+correspond to references to variables $v_i$ in $P$. Thus, by inversion, the
+structure of $D_1$ corresponds exactly to the structure of $D_2$, except for the
+variable references.  Thus, although for completeness we'd consider all cases
+for the derivation $D_1$, in practice we'll only show the interesting case,
+which is a read/assignment of a templated variable.  
 
-Case.  Suppose $D_1$ (reachability instance) is:
-\[
+\vspace{1ex}
+\noindent \emph{Case:} Suppose $D_1$ (reachability instance) is:
+
+ \[
 \begin{array}{c}
 
 \infer[\textit{assign}]
@@ -261,7 +338,8 @@ Case.  Suppose $D_1$ (reachability instance) is:
 \end{array}
 \]
 
-By inversion and the construction of $P$, $D_2$ is:
+
+\noindent By inversion and the construction of $P$, $D_2$ is: 
 
 \[
 \begin{array}{c}
@@ -272,67 +350,73 @@ By inversion and the construction of $P$, $D_2$ is:
 \end{array}
 \]
 
+\noindent 
 where $exp = inst(\fbox{$\displaystyle c_i $}, \bar{c}) = c_i$
 
-Now we have $E_2 = E_1 [ a \rightarrow E_1(v_i) ]$
-and $E_3 = E_1 [ a \rightarrow c_i ]$
+Now, we know that $E_2 = E_1 [ a \rightarrow E_1(v_i) ]$ and
+$E_3 = E_1 [ a \rightarrow c_i ]$. We know that $E_2$ and $E_3$ agree on all
+variables except $a$ (because they are the same as $E_1$, for all variables
+except $a$). So, this obligation simplifies to showing that $E_1 (v_i) = c_i.$
+This is actually one of the assumptions in the statement of the lemma.
+(Intuitively, it means the reachability analysis assigned $c_i$ to each variable
+$v_i$ to reach the label $L$.)
 
-to show: for all $y \neq v_i, E_2(y) = E_3(y). $
+\vspace{1ex}
+The other cases are direct, because they do not involve the template paramters
+$v_i$: the inference rule used in $D_1$ will exactly mirror the inference rule
+used in $D_2$.  
 
-Sub-case 1,$y \neq a. $ Then, $E_2(y)  = E_3(y)$.  
-
-Sub-case 2.  $y = a$.  To show: $E_1  (v_i) = c_i.$  This is actually one of
-the assumptions in the statement of the lemma.  (Intuitively, it means the
-reachability analysis assigned $c_i$ to each variable $v_i$ to reach the label $L$.) 
-
+We have therefore established that the executions of $P$'s functions mirror $Q$'s
+functions, modulo the template parameters, which are held constant.
 
 \subsection{Lemma 2 (Reach L = Pass tests)}
 
+We now establish that reaching $L$ in $P$ by assigning each $v_i$ the value
+$c_i$ corresponds to $Q[c_i,\ldots,c_n]$ passing all of the tests. 
 
-Let $Q$ be the input synthesis instance method with template variables $v_1
-\ldots. v_n$ and tests $\langle\alpha_1, \beta_n\rangle$
+Let $Q$ be the input synthesis instance method with template variables
+$v_1 \ldots. v_n$ and tests $\langle\alpha_1, \beta_n\rangle$ Let
+$P = \mbox{GadgetS2R}(Q)$ be the reachability instance method \texttt{main}. 
 
-Let $P = \mbox{GadgetS2R}(Q)$ be the reachability instance method \texttt{main}.
-The execution of $P$ reaches $L$ starting from state $E_1$ iff  $E_1
-\vDash wp(inst(Q, \bar{c})(\alpha_1), result = \beta_1) \wedge \ldots
-wp(inst(Q,\bar{c}(\alpha_n), result = \beta_n)$ where $E_1(v_i) =
-c_i$
-
-
-By gadget construction there is only one label $L$ in $P$, $\mathtt{if}~ e~
-\mathtt{then} [L]$ where $e$ is of the form $f(\alpha_1) = \beta_1 \wedge \ldots
-f(\alpha_n) = \beta_n$.
+We know that the execution of $P$ reaches $L$ starting from state $E_1$ iff
+$E_1 \vDash wp(inst(Q, \bar{c})(\alpha_1), result = \beta_1) \wedge \ldots
+wp(inst(Q,\bar{c}(\alpha_n), result = \beta_n)$ where $E_1(v_i) = c_i$.
+%
+By gadget construction, we also know there is only one label $L$ in $P$,
+$\mathtt{if}~ e~ \mathtt{then}~[L]$, and that $e$ is of the form
+$f(\alpha_1) = \beta_1 \wedge \ldots f(\alpha_n) = \beta_n$.
 
 By standard weakest precondition definitions for if, conjunction, equality and
-function calls, we have that $L$ is reachable iff $E_1 \vDash  wp(result :=
-f(\alpha_1), result = \beta_1) \wedge \ldots wp(result := f(\alpha_n), result =
-\beta_n).$
-
-What we \emph{want} is that $L$ is reachable iff $E_1 \vDash wp(
-result := inst(Q, \bar{c})(\alpha_1), result = \beta_1) \wedge \ldots wp(result := inst(Q,
-c)(\alpha_n), result = \beta_n)$
+function calls, we have that $L$ is reachable iff
+$E_1 \vDash wp(result := f(\alpha_1), result = \beta_1) \wedge \ldots wp(result
+:= f(\alpha_n), result = \beta_n).$ What we \emph{want} is that $L$ is reachable
+iff
+$E_1 \vDash wp( result := inst(Q, \bar{c})(\alpha_1), result = \beta_1) \wedge
+\ldots wp(result := inst(Q, c)(\alpha_n), result = \beta_n)$
 
 So, we have to show that $E_1 \vDash wp(result := f(\alpha_i), result =
 \beta_i)$ iff $E_1 \vDash wp(result := inst(Q, \bar{c})(\alpha_i), result =
-\beta_i)$.  $f$ here is the method from GadgetS2R(Q).  By the soundness and
-completeness of weakest preconditions wrt operational semantics, we have
-$\langle result := f(\alpha_i), E_1\rangle \Downarrow E_2$ iff $E_2 \vDash
-result = \beta_i$.  
+\beta_i)$.  $f$ here is the method from GadgetS2R(Q).  
 
+By the soundness and completeness of weakest preconditions wrt operational
+semantics, we have $\langle result := f(\alpha_i), E_1\rangle \Downarrow E_2$
+iff $E_2 \vDash result = \beta_i$.
+%
 By Lemma 1, we have $\langle result := inst(Q, \bar{c})(\alpha_i) ,
 E_1 \rangle \Downarrow E_3$ iff $E_1(y)= E_3(y)$ for all $y \neq
 v_i$.
-
-Since ``result'' $\neq v_i$, $E_1(result) = E_3(result)$ (``lemma1'') and
-$E_3(result) = \beta_i$ (``Have''), transitively, running the template program
-$Q$ instantiated with $c_i = v_i$ on a test input produces the required output.
+%
+Since ``result'' $\neq v_i$, $E_1(result) = E_3(result)$ (we know this from
+lemma 1) and $E_3(result) = \beta_i$ (because of the weakest precondition
+reasoning above). So, running the template program $Q$ instantiated with
+$c_i = v_i$ on a test input produces the required output.
 
 \subsection{Correctness}
 
 This leads us to the correctness theorem, which is as follows: Let $Q$ be the
 input synthesis instance method with template variables $v_1 ... v_n$ and tests
-$\langle\alpha_1, \beta_n\rangle$. 
-Let $P = GadgetS2R(Q)$ be the reachability instance method main.
+$\langle\alpha_1, \beta_n\rangle$. Let $P = GadgetS2R(Q)$ be the reachability
+instance method \texttt{main}.
 
 There exist parameter values $c_i$ such that for all
 $\langle\alpha_i,\beta_i\rangle, inst(Q,\bar{c})(\alpha_i) = \beta_i$ iff there exists input
@@ -341,26 +425,27 @@ The proof is from Lemma 2 with $t_i = c_i$.
 
 Note that we can also carry out a constructive reduction going in the other
 direction. That is, suppose we are given an instance of program reachability.
-\emph{Can we convert it into a program synthesis instance to solve it?}
+\emph{Can we convert it into a program synthesis instance to solve
+  it?}\footnote{We elide these details but note they are expanded upon in the
+  original publication.}
 
 \section{Implications}
 
 Program reachability tools and techniques are much more mature than program
-repair tools. This correspondence between the problems, among other things,
-suggests a way to use reachability to attempt to fix bugs in programs. It
-proceeds by, for every potentially buggy line, in some ranked order, and then
-for every possible considered repair template, also in some ranked order,
-converting the repair instance to a reachability instance and then calling an
-off-the-shelf reachability tool (e.g., an SMT solver-based concolic execution
-engine like KLEE). If the label is reachable, the discovered parameters in the
-satisfying model can be returned for instantiation as a program patch.
+repair tools. This correspondence between the problems therefore suggests a way
+to use reachability to attempt to fix bugs in programs. It proceeds by, for
+every potentially buggy line, in some ranked order, and then for every possible
+considered repair template, also in some ranked order, converting the repair
+instance to a reachability instance and then calling an off-the-shelf
+reachability tool (e.g., an SMT solver-based concolic execution engine like
+KLEE). If the label is reachable, the discovered parameters in the satisfying
+model can be returned for instantiation as a program patch.
 
-Overall, this is an instance of an overall correspondence between a variety of
-the techniques we are considering in this class (e.g., model checking ,test generation,
-syntax-guided synthesis, and program repair); all of these techniques are
-seeking, in some way, to statically reason about dynamic execution.  We can
-sometimes take advantage of this correspondence to discover new techniques, as
-this particular reduction demonstrates. 
+Overall, this correspondance helps illustrate how all of the techniques we have
+discussed (e.g., test generation, model checking, verification) are seeking, in
+some way, to statically reason about dynamic execution. We can sometimes take
+advantage of this correspondence to discover new techniques, as this particular
+reduction demonstrates.
 
 
 \bibliographystyle{abbrv}
