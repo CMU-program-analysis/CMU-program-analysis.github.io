@@ -1,0 +1,265 @@
+\documentclass[11pt]{article}
+\usepackage{../../tex/math-cmds}
+\usepackage{../../tex/analysis}
+\usepackage{IEEEtrantools}
+
+\usepackage{mathabx}
+
+\title{Lecture Notes:
+Program Analysis Correctness}
+\author{17-355/17-665/17-819: Program Analysis (Spring 2020)\\
+        Claire Le Goues\footnote{These notes were developed together with Jonathan Aldrich}\\
+		{\tt clegoues@cs.cmu.edu}}
+	\date{}
+
+
+
+
+\begin{document}
+
+
+\maketitle
+\definecolor{dkgreen}{rgb}{0,0.5,0}
+\definecolor{dkred}{rgb}{0.5,0,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+
+\lstdefinestyle{javastyle} {
+language=Java,
+basicstyle=\ttfamily,
+  morekeywords={virtualinvoke},
+  keywordstyle=\color{blue},
+  ndkeywordstyle=\color{red},
+  commentstyle=\color{dkred},
+  stringstyle=\color{dkgreen},
+  numbers=none,
+  breaklines=true,
+  numberstyle=\ttfamily\footnotesize\color{gray},
+  stepnumber=1,
+  numbersep=10pt,
+  backgroundcolor=\color{white},
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+%  xleftmargin=.23in
+}
+\lstset{style=javastyle}
+
+%TODO: try to consistently use storing before or storing after each instruction.  Awkward that algorithm and reasoning in the Termination section is based on storing after, but the whole Correctness section presumes we are storing before.
+
+\section{Termination}
+
+As we think about the correctness of program analysis, let us first think more carefully about the situations under which program analysis will terminate.  In a previous lecture, we analyzed the performance of Kildall's worklist algorithm.  A critical part of that performance analysis was the the observation that running a flow function on the same statement for the second time always either leaves the output dataflow analysis information unchanged, or makes it more approximate---that is, it moves the current dataflow analysis results up in the lattice, relative to the output when the flow function was run the first time.  The dataflow values at each program point describe an \textit{ascending chain}:
+
+\definition{Ascending Chain}{A sequence ${\sigma_k}$ is an \textit{ascending chain} iff $n \le m$ implies $\sigma_n \alap \sigma_m$}
+
+\noindent We can define the height of an ascending chain, and of a lattice, in order to bound the number of new analysis values we can compute at each program point:
+
+\definition{Height of an Ascending Chain}{An ascending chain ${\sigma_k}$ has finite height $h$ if it contains $h+1$ distinct elements.}
+
+\definition{Height of a Lattice}{A lattice $(L,\alap)$ has finite height $h$ if there is an ascending chain in the lattice of height $h$, and no ascending chain in the lattice has height greater than $h$}
+
+% TODO: EXAMPLE: NON-FINITE HEIGHT LATTICE, and non-termination
+
+\vspace{1em}
+We can now show that for a lattice of finite height, the worklist algorithm is guaranteed to terminate.  We do so by showing that the dataflow analysis information at each program point follows an ascending chain.  Consider again the worklist algorithm, this time in a slight
+variation that stores information both before and after each instruction, and computes the new input to a node by joining the outputs of all its predecessors.  We assume a distinguished \texttt{programStart} node which comes before the first instruction:
+
+% ALGORITHM CRITERIA:
+% - must store information before each node (consistent with prior presentation, also consistent with verification discussion later)
+% - must update by joining all incoming edges together, not just the one that changed with the old value.  This motives monotonicity, which is an important idea.
+% - must store outputs as well as inputs in order to show that we rise in the lattice each time we add something to the worklist
+
+\begin{lstlisting}[mathescape]
+for Instruction i in program
+    input[i] = output[i] = $\bottom$
+output[programStart] = initialDataflowInformation
+worklist = { firstInstruction }
+
+while worklist is not empty
+    take an instruction i off the worklist
+    input[i] = $\join_{k \in preds(\texttt{i})}$ output[k]
+    newOutput = flow(i, input[i])
+    if newOutput $\neq$ output[i]
+        output[i] = newOutput
+        for Instruction j in succs(i)
+           add j to worklist
+\end{lstlisting}
+
+We can make an intuitive inductive argument for termination:  At the beginning of the analysis, the analysis information before and after every program point (other than after the program start node) is $\bottom$ (by definition).  Thus the first time we run each flow function for each instruction, the result will be at least as high in the lattice as what was there before (because nothing is lower in a lattice than $\bottom$).  We will run the flow function for a given instruction again at a program point only if the output from a predecessor instruction changes.  Assume that the previous time we ran the flow function, we had input information $\sigma_i$ and output information $\sigma_o$.  Now we are running it again because the input dataflow analysis information has changed to some new $\sigma_i'$---and by the induction hypothesis, we can assume it is higher in the lattice than before, i.e. $\sigma_i \alap \sigma_i'$.  
+
+What we need to show is that the output information $\sigma_o'$ is at least as high in the lattice as the old output information $\sigma_o$---that is, we must show that $\sigma_o \alap \sigma_o'$.  This will be true if our flow functions are monotonic:
+
+\definition{Monotonicity}{A function $f$ is \textit{monotonic} iff $\sigma_1 \alap \sigma_2$ implies $f(\sigma_1) \alap f(\sigma_2$)}
+
+\vspace{1em}
+
+\noindent Now we can state the termination theorem:
+
+\theorem[Dataflow Analysis Termination]{If a dataflow lattice $(L,\alap)$ has finite height, and the corresponding flow functions are monotonic, the worklist algorithm will terminate.}
+
+\proof The idea should be intuitively clear from the argument above.  However, to make it rigorous, we provide the following termination metric:
+
+\[
+M = |worklist| + EpN * LC(\sigma)
+\]
+
+where $|worklist|$ is the length of the worklist, $EpN$ is the maximum number of outgoing \textit{Edges per Node}, and $LC(\sigma)$ is the longest aescending chain from $\sigma$ to $\top$.  When computing $LC(\sigma)$ we consider $\sigma$ to be one big lattice, i.e. a tuple constructed from the sub-lattices for each program point, so that moving up in the sub-lattice for any program point moves the overall $\sigma$ lattice up as well.
+
+$M$ is finite because $|worklist|$ is bounded by the number of nodes in the program, $EpN$ is finite, and the lattice $\sigma$ is of finite height (which we know because it is a tuple lattice with a finite number of sub-lattices, all of which have finite height by the assumption in the theorem).
+
+$M$ decreases on each iteration of the loop, as follows.  $|worklist|$ generally decreases by one in each iteration because one node is removed from it.  However, we must account for additions to the worklist when the \texttt{newOutput $\neq$ output[i]} condition holds.  But note that when this condition holds, \texttt{newOutput} must be higher in the lattice than \texttt{output[i]} by monotonicity.  Thus, running the flow function reduced $LC(\sigma)$ by at least one.  We then add at most $EpN$ nodes to the worklist.  The increase to the worklist is at least balanced by the decrease in $EpN * LC(\sigma)$.  Thus, the metric $M$ decreases even when the condition that results in adding nodes to the worklist holds.
+
+\exercise{1} Convince yourself that, for monotonic flow functions, the algorithm above does the same thing as the algorithm given in a previous lecture.
+
+%Follows the logic given above when motivating monotonicity.  Monotonicity implies that the dataflow value at each program point $i$ can only increase each time $\sigma[i]$ is assigned.  This can happen a maximum of $h$ times for each program point, where $h$ is the height of the lattice.  This bounds the number of elements added to the worklist to $h * e$, where $e$ is the number of edges in the program's control flow graph.  Since we remove one element of the worklist for each time through the loop, we will execute the loop at most $h * e$ times before the worklist is empty.  Thus, the algorithm will terminate.
+\qed
+
+\section{Montonicity of Zero Analysis}
+
+
+We can formally show that zero analysis is monotone; this is relevant both to the proof of termination, above, and to correctness, next.  We will only give a couple of the more interesting cases, and leave the rest as an exercise to the reader: 
+
+\begin{tabularx}{\textwidth}{lX}
+\emph{Case}  & $f_Z\parg{x := 0}(\sigma) = \sigma[x \mapsto Z]$: \\
+ & Assume we have $\sigma_1 \alap \sigma_2$ \\
+ & Since $\alap$ is defined pointwise, we know that $\sigma_1[x \mapsto Z] \alap \sigma_2[x \mapsto Z]$\\
+\\
+
+\emph{Case} &  $f_Z\parg{x := y}(\sigma) = \sigma[x \mapsto \sigma(y)]$: \\
+& Assume we have $\sigma_1 \alap \sigma_2$ \\
+&  Since $\alap$ is defined pointwise, we know that $\sigma_1(y) \alap_\textit{simple} \sigma_2(y)$ \\
+& Therefore, using the pointwise definition of $\alap$ again, we also obtain $\sigma_1[x \mapsto \sigma_1(y)] \alap \sigma_2[x \mapsto \sigma_2(y)]$\\ 
+\end{tabularx}
+
+\noindent ($\alpha_\textit{simple}$ and $\alap_\textit{simple}$ are simply the unlifted versions of $\alpha$ and $\alap$, i.e. they operate on individual values rather than maps.)
+
+
+
+
+\section{Correctness}
+
+What does it mean for an analysis of a \WhileThAddr\ program to be correct?  Intuitively, we would like the program analysis results to correctly describe every actual execution of the program.  To establish correctness, we will make use of the precise definitions of \WhileThAddr\ we gave in the form of operational semantics in the first couple of lectures. 
+We start by formalizing a program execution as a trace:
+
+\definition{Program Trace}{A trace $T$ of a program $P$ is a potentially infinite sequence $\{ c_0, c_1, ... \}$ of program configurations, where $c_0 = E_0, 1$ is called the initial configuration, and for every $i \ge 0$ we have $P \vdash c_i \leadsto c_{i+1}$}.
+
+% TODO: EXAMPLE OF A TRACE
+
+\noindent Given this definition, we can formally define soundness:
+
+\definition{Dataflow Analysis Soundness}{The result $\{ \sigma_n ~|~ n \in P \}$ of a program analysis running on program $P$ is sound iff, for all traces $T$ of $P$, for all $i$ such that $0 \le i < \textit{length}(T)$, $\alpha(c_i) \alap \sigma_{n_i}$}
+
+In this definition, just as $c_i$ is the program configuration immediately before executing instruction $n_i$ as the $i$th program step, $\sigma_{n_i}$ is the dataflow analysis information immediately before instruction $n_i$.
+
+% TODO: SAMPLE ZERO ANALYSIS RESULTS - COMPARE TO TRACE TO TEST CLAIM
+
+
+%%%%%%%%%%%%%%%%%%%% GOT TO HERE IN FIRST CLASS ON CORRECTNESS
+
+\exercise{2}  Consider the following (incorrect) flow function for zero analysis:
+
+\[
+f_Z\parg{x := y + z}(\sigma) = \sigma[x \mapsto Z]
+\]
+
+Give an example of a program and a concrete trace that illustrates that this flow function is unsound.
+
+\answer{1}{TODO}
+
+
+The key to designing a sound analysis is to make sure that the flow functions map abstract information before each instruction to abstract information after that instruction in a way that matches the instruction's concrete semantics.  Another way of saying this is that the manipulation of the abstract state done by the analysis should reflect the  manipulation of the concrete machine state done by the executing instruction.  We can formalize this as a \textit{local soundness} property:
+
+\definition{Local Soundness}{A flow function $f$ is \textit{locally sound} iff $P \vdash c_i \leadsto c_{i+1}$ and $\alpha(c_i) \alap \sigma_{n_i}$ and $f\parg{P[n_i]}(\sigma_{n_i}) = \sigma_{n_{i+1}}$ implies $\alpha(c_{i+1}) \alap \sigma_{n_{i+1}}$}
+
+In English: if we take any concrete execution of a program instruction, map the input machine state to the abstract domain using the abstraction function, find that the abstracted input state is described by the analysis input information, and apply the flow function, we should get a result that correctly accounts for what happens if we map the actual concrete output machine state to the abstract domain.
+
+\exercise{3}  Consider again the incorrect zero analysis flow function described above.  Specify an input state $c_i$ and  use that input state to show that the flow function is not locally sound.
+
+\answer{3}{TODO}
+
+We can now show that the flow functions for zero analysis are locally sound.  Although technically the overall abstraction function $\alpha$ accepts a complete program configuration $(E,n)$, for zero analysis we can ignore the $n$ component and so in the proof below we will simply focus on the environment $E$.  We show the cases for a couple of interesting syntax forms; the rest are either trivial or analogous:\\[1ex]
+
+\begin{tabularx}{\textwidth}{lX}
+\emph{Case} & $f_Z\parg{x := 0}(\sigma_{n_i}) $ = $\sigma_{n_i}[x \mapsto Z]$: \\
+ & Assume $c_i = E,n$ and $\alpha(E) \alap \sigma_{n_i}$ \\
+ & Thus $\sigma_{n_{i+1}} = f_Z\parg{x := 0}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto Z]$ \\ 
+ & $c_{i+1} = E[x \mapsto 0],n+1$ by rule \textit{step-const} \\
+ & Now $\alpha(c_{i+1}) = \alpha(E[x \mapsto 0]) = \alpha(E)[x \mapsto Z]$ by the definition of $\alpha$. \\
+
+ & $\alpha(E) \alap \sigma_{n_i}$ implies $\alpha(c_{i+1}) = \alpha(E)[x \mapsto Z] \alap \sigma_{n_i}[x \mapsto Z] = \sigma_{n_{i+1}}$, \\
+ & so therefore $\alpha(c_{i+1}) \alap \sigma_{n_{i+1}}$, which finishes the case.\\
+
+\\
+\emph{Case} & $f_Z\parg{x := m}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto N] ~~~~ \mbox{where}~ m \neq 0$: \\
+ & Assume $c_i = E,n$ and $\alpha(E) \alap \sigma_{n_i}$ \\
+ & Thus $\sigma_{n_{i+1}} = f_Z\parg{x := m}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto N]$ \\
+ &  $c_{i+1} = E[x \mapsto m],n+1$ by rule \textit{step-const} \\ 
+ & Now $\alpha(c_{i+1}) = \alpha(E[x \mapsto m]) = \alpha(E)[x \mapsto N]$ by the definition of $\alpha$ and the assumption that $m \neq 0$. \\
+ & $\alpha(E) \alap \sigma_{n_i}$ implies $\alpha(c_{i+1}) = \alpha(E)[x \mapsto N] \alap \sigma_{n_i}[x \mapsto N] = \sigma_{n_{i+1}}$. \\
+ &  so therefore $\alpha(c_{i+1}) \alap \sigma_{n_{i+1}}$ which finishes the case.\\
+
+\end{tabularx}
+
+\begin{tabularx}{\textwidth}{lX}
+\\
+\emph{Case} & $f_Z\parg{x := y ~op~ z}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto \top]$: \\
+ & Assume $c_i = E,n$ and $\alpha(E) \alap \sigma_{n_i}$ \\
+ & Thus $\sigma_{n_{i+1}} = f_Z\parg{x := y ~op~ z}(\sigma_{n_i}) = \sigma_{n_i}[x \mapsto \top]$ \\
+ & $c_{i+1} = E[x \mapsto k],n+1$ for some $k$ by rule \textit{step-arith} \\
+ &  Now $\alpha(c_{i+1}) = \alpha(E[x \mapsto k]) \alap \alpha(E)[x \mapsto \top]$ because the map is equal for all keys except $x$, and for $x$ we have $\alpha_\textit{simple}(k) \alap_\textit{simple} \top$ for all $k$, where $\alpha_\textit{simple}$ and $\alap_\textit{simple}$ are the unlifted versions of $\alpha$ and $\alap$, i.e. they operate on individual values rather than maps. \\
+ & $\alpha(E) \alap \sigma_{n_i}$ implies $\alpha(c_{i+1}) = \alpha(E[x \mapsto k]) \alap \alpha(E)[x \mapsto \top] \alap \sigma_{n_i}[x \mapsto \top] = \sigma_{n_{i+1}}$, \\
+&  so therefore, by transitivity of $\alap$, $\alpha(c_{i+1}) \alap \sigma_{n_{i+1}}$ which finishes the case. \\
+ \end{tabularx}
+
+\exercise{4}  Prove the case for $f_Z\parg{x := y}(\sigma) = \sigma[x \mapsto \sigma(y)]$.
+
+\answer{4}{TODO}
+
+
+Now we can show that local soundness can be used to prove the global soundness of a dataflow analysis.  To do so, let us formally define the state of the dataflow analysis at a fixed point:
+
+\definition{Fixed Point}{A dataflow analysis result $\{ \sigma_i ~|~ i \in P \}$ is a fixed point iff $\sigma_0 \alap \sigma_1$ where $\sigma_0$ is the initial analysis information and $\sigma_1$ is the information before the first instruction, and for each instruction $i$ we have $\bigsqcup_{j \in \mathtt{preds}(i)} f\parg{P[j]}(\sigma_j) \alap \sigma_i$.}
+
+\vspace{1em}
+
+\noindent The worklist algorithm show above computes a fixed point when it terminates.  We can prove this by showing that the following loop invariant is maintained:
+
+\[
+\forall i ~.~ (\exists j \in preds(i) ~\textit{such that}~f\parg{P[j]}(\sigma_j) \not\alap \sigma_i) \Rightarrow i \in \texttt{worklist}
+\]
+
+The invariant is initially true if we assume that flow functions when applied to $\bottom$ always produce $\bottom$ (if this is not true, the invariant can be reformulated in a slightly more complicated way).  The invariant is maintained because whenever the output $f\parg{P[j]}(\sigma_j)$ of instruction $j$ changes, possibly breaking the invariant, then the successors of $j$ are added to the worklist, thus restoring it.  When an instruction $i$ is removed from the worklist and processed, the invariant as it applies to $i$ is established.  Finally, when the worklist is empty, the definition above is equivalent to the definition of a fixed point.
+
+\vspace{1em}
+
+\noindent And now the main result we will use to prove program analyses correct:
+
+\theorem[A fixed point of a locally sound analysis is globally sound]{If a dataflow analysis's flow function $f$ is monotonic and locally sound, and for all traces $T$ we have $\alpha(c_0) \alap \sigma_0$ where $\sigma_0$ is the initial analysis information, then any fixed point $\{ \sigma_n ~|~ n \in P \}$ of the analysis is sound.}
+
+\proof To show that the analysis is sound, we must prove that for all program traces, every program configuration in that trace is correctly approximated by the analysis results.  We consider an arbitrary program trace $T$ and do the proof by induction on the program configurations $\{ c_i \}$ in the trace.\\[1ex]
+
+\begin{tabular}{ll}
+\emph{Case $c_0$:} & \\
+& $\alpha(c_0) \alap \sigma_0$ by assumption. \\
+& $\sigma_0 \alap \sigma_{n_0}$ by the definition of a fixed point. \\
+& $\alpha(c_0) \alap \sigma_{n_0}$ by the transitivity of $\alap$.\\
+
+\\
+
+Case $c_{i+1}$: & \\
+& $\alpha(c_i) \alap \sigma_{n_i}$ by the induction hypothesis. \\
+& $P \vdash c_i \leadsto c_{i+1}$ by the definition of a trace. \\
+& $\alpha(c_{i+1}) \alap f\parg{P[n_i]}(\sigma_{n_i})$ by local soundness. \\
+%& $f\parg{P[n_i]}(\alpha(c_i)) \alap f\parg{P[n_i]}(\sigma_{n_i})$ by monotonicity of $f$. \\
+& $f\parg{P[n_i]}(\sigma_{n_i}) \join ... \alap \sigma_{n_{i+1}}$ by the definition of fixed point. \\
+& $f\parg{P[n_i]}(\sigma_{n_i}) \alap \sigma_{n_{i+1}}$ by the properties of $\join$. \\
+& $\alpha(c_{i+1}) \alap \sigma_{n_{i+1}}$ by the transitivity of $\alap$. \\
+\end{tabular}
+
+\qed\\[1ex]
+
+Since we previously proved that Zero Analysis is locally sound and that its flow functions are monotonic, we can use this theorem to conclude that the analysis is sound.  This means, for example, that Zero Analysis will never neglect to warn us if we are dividing by a variable that could be zero.
+
+
+
+\end{document}

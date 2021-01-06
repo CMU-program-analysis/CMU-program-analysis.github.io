@@ -1,0 +1,409 @@
+\documentclass[11pt]{article}
+\usepackage{../../tex/math-cmds}
+\usepackage{../../tex/analysis}
+\usepackage{IEEEtrantools}
+\usepackage{mathabx}
+\usepackage{upgreek}
+
+
+\title{Lecture Notes: Program Synthesis}
+\author{17-355/17-665/17-819: Program Analysis (Spring 2020)\\
+        Claire Le Goues\footnote{These notes are created in collaboration with
+          Jonathan Aldrich}\\
+		{\tt clegoues@cs.cmu.edu}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Note:} A complete, if lengthy, resource on inductive program
+synthesis is the book ``Program Synthesis'' by
+Gulwani~\emph{et. al}~\cite{synthesisBook}.  You need not read the whole thing;
+I encourage you to investigate the portions of interest to you, and skim as
+appropriate. Many references in this document are drawn from there; if you are
+interested, it contains many more.
+
+\section{Program Synthesis Overview}
+
+The problem of program synthesis can be expressed as follows:
+\[
+\exists P~.~ \forall x~.~ \varphi (x, P(x))
+\]
+
+In the setting of \textit{constructive} logic, proving the validity of a formula
+that begins with an existential involves coming up with a \textit{witness}, or
+concrete example, that can be plugged into the rest of the formula to demonstrate
+that it is true.
+In this case, the witness is a program $P$ that satisfies some specification
+$\varphi$ on all inputs.  
+We take a liberal view of $P$ in discussing synthesis, as a wide
+variety of artifact types have beeen successfully synthesized (anything that reads
+inputs or produces outputs).  Beyond (relatively small) program snippets of the
+expected variety, this includes protocols, interpreters, classifiers,
+compression algorithms or implementations, scheduling policies, and cache coherence
+protocols for multicore processors.  The specification $\varphi$ is an
+expression of the user intent, and may be expressed in one of several ways: a
+formula, a reference implementation, input/output pairs, traces, demonstrations,
+or a syntactic \emph{sketch}, among other options.
+
+Program synthesis can thus be considered along three dimensions: 
+
+\paragraph{(1) Expressing user intent.} User intent (or $\varphi$ in the above) can be expressed in a number of
+ways, including logical specifications, input/output examples~\cite{Gulwani2016} (often with some
+kind of user- or synthesizer-driven interaction), traces, natural language~\cite{Desai2016,Gulwani2014,Le2013}, or full- or partial programs~\cite{sketch}.
+In this latter category lies reference implementations, such as executable
+specifications (which give the desired output for a given input) or declarative
+specifications (which check whether a given input/output pair is correct).
+Some synthesis techniques allow for multi-modal specifications, including pre-
+and post- conditions, safety assertions at arbitrary program points, or partial
+program templates.
+
+Such specifications can constrain two aspects of the synthesis problem:
+\begin{itemize}
+\item \textbf{Observable behavior}, such as an input/output relation, a full
+  executable specification or safety property.  This specifies \emph{what} a
+  program should compute.
+\item \textbf{Structural properties}, or internal computation steps.  These are
+  often expressed as a sketch or template, but can be further constrained by
+  assertions over the number or variety of operations in a synthesized programs
+  (or number of iterations, number of cache misses, etc, depending on the
+  synthesis problem in question).  Indeed, one of the key principles behind the
+  scaling of many modern synthesis techniques lie in the way they syntactically
+  restrict the space of possible programs, often via a sketch, grammar, or DSL. 
+\end{itemize}. 
+
+Note that basically all of the above types of specifications can be translated
+to constraints in some form or another.  
+%
+Techniques that operate over multiple types of specifications can overcome
+various challenges that come up over the course of an arbitrary synthesis
+problem.  Different specification types are more suitable for some types of
+problems than others.  In addition, trace- or sketch-based specifications can
+allow a synthesizer to decompose a synthesis problems into intermediate program
+points.
+
+\vspace{1em}
+\noindent\emph{Question: how many ways can we specify a sorting algorithm?}
+
+\paragraph{(2) Search space of possible programs.}  The search space naturally includes programs, often
+constructed of subsets of normal programming languages.  This can include a
+predefined set of considered operators or control structures, defined as
+grammars.  However, other spaces are considered for various synthesis problems,
+like logics of various kinds, which can be useful for, e.g., synthesizing
+graph/tree algorithms. 
+
+\paragraph{(3) Search technique.}
+At a high level, there are two general approaches to logical synthesis:
+\begin{itemize}
+\item Deductive (or classic) synthesis (e.g.,~\cite{deductive}), which maps a
+  high-level (e.g. logical) specification to an executable implementation,
+  classically using a theorem prover. Such approaches are efficient and provably
+  correct: thanks to the semantics-preserving rules, only correct programs are
+  explored. However, they require complete specifications and sufficient
+  axiomatization of the domain. These approaches are classically applied to
+  e.g., controller synthesis.
+\item Inductive (sometimes called syntax-guided) synthesis, which takes a
+  partial (and often multi-modal) specification and constructs a program that
+  satisfies it.  These techniques are more flexible in their specification
+  requirements and require no axioms, but often at the cost of lower efficiency
+  and weaker bounded guarantees on the optimality of synthesized code.  
+\end{itemize}
+
+
+Deductive synthesis shares quite a bit in common, conceptually, with
+compilation: rewriting a specification according to various rules to achieve a
+new program in at a different level of representation.  
+However, deductive synthesis approaches assume a
+complete formal specification of the desired user intent was provided. In many
+cases, this can be as complicated as writing the program itself.
+
+This has motivated new inductive synthesis approaches, towards which
+considerable modern research energy has been dedicated. This category of
+techniques lends itself to a wide variety of search strategies, including
+brute-force or enumerative~\cite{AlurBDF0JKMMRSSSSTU15} (you might be
+surprised!), probabilistic inference/belief propagation~\cite{Gulwani2007}, or
+genetic programming~\cite{Katz2008}. Alternatively, techniques based on logical
+reasoning delegate the search problem to a constraint solver. We will spend more
+time on this set of techniques.
+
+\section{Deductive Synthesis}
+
+We will very briefly overview Denali~\cite{Joshi2002}, a prototypical
+deductive synthesis technique for \emph{superoptimization}.\footnote{This
+  explanation is further illustrated using the associated lecture slides.}
+Denali seeks to generate short sequences of provably optimal loop-free machine
+instructions, for use primarily incompilation. While compilers generate
+reasonably good code, there are cases in which we would instead prefer provably
+optimal code. Generating such code is the task of a superoptimizer (so-called
+because the title of optimization ``has been given to a field that does not
+aspire to optimize but only to improve''). Early approaches for
+superoptimization attempted to enumerate via brute force (in order of increasing
+length) efficient sequences of instructions, with correctness checked by hand
+and against a set of test cases. This correctness critierion is challenging to
+confirm, however, and does not necessarily result in optimality.
+
+Joshi et al. propose an approach to superoptimization based on theorem proving.
+The ``obvious'' approach (which they do \emph{not} take) would be to, given a
+desired program fragment P, express in formal logic ``no program of the target
+architecture computes P in at most N cycles.''  However, this obvious approach
+is very difficult to manage with a theorem prover, because it must be expressed
+using nested quantifiers. 
+
+Instead, they propose a process based on the idea that for sufficiently simple
+programs, equivalence between a desired P and some alternative implementation M
+for all inputs is essentially the universal validity of an equality between two
+vectors of terms (the one M computes, and the terms specified by P in the
+computatoin). This type of equivalience can be proved by matching, which is a
+well understood technique in theorem proving.
+
+To do this, their technique, named Denali, takes as input a program P written in
+a DSL for the associated target architecture. It then constructs an
+\emph{E-graph} using the specified desired program P as input. An E-graph is a
+term DAG corresponding to the expression to be synthesized, augmented with an
+equivalence relation on the nodes of the DAG. Two nodes are equivalent if the
+terms they represent are identical in value.
+%
+Denali then uses a theorem prover, along with two sets of axioms (encoding
+\emph{instruction semantics}---an interpreter for the target language,
+effectively---and algebraic properties---memory modeling, mostly), to search the
+e-graph for the most efficient way to compute the expression.  
+
+\section{Inductive Synthesis} 
+
+Inductive synthesis uses inductive reasoning to construct programs in response
+to partial specifications. The program is synthesized via a symbolic
+interpretation of a space of candidates, rather than by deriving the candidate
+directly. So, to synthesize such a program, we basically only require an
+interpreter, rather than a sufficient set of derivation axioms. Inductive
+synthesis is applicable to a variety of problem types, such as string
+transformation (FlashFill)~\cite{Gulwani2012}, data
+extraction/processing/wrangling~\cite{Gulwani2016,Singh2016}, layout
+transformation of tables or tree-shaped structures~\cite{Yaghmazadeh2016},
+graphics (constructing structured, repetitive
+drawings)~\cite{Hempel2016,Chugh2016}, program
+repair~\cite{mechtaev2016angelix,genprog-tse-journal} (spoiler alert!),
+superoptimization~\cite{Joshi2002}, and efficient synchronization, among others.
+
+Inductive synthesis consists of several family of approaches; we will overview
+several prominent examples, without claiming to be complete.  
+
+\subsection{SKETCH, CEGIS, and SyGuS}
+
+SKETCH is a well-known synthesis system that allows programs to provide partial
+programs (a sketch) that expresses the high-level structure of the intended
+implementation but leaves holes for low-level implementation details. The
+synthesizer fills these holes from a finite set of choices, using an approach
+now known as Counterexample-guided Inductive Synthesis
+(CEGIS)~\cite{sketch,Polozov2015}. This well-known synthesis architecture divies
+the problem into \emph{search} and \emph{verification} components, and uses the
+output from the latter to refine the specification given to the former.
+
+\vspace{1em}
+\noindent\emph{We have a diagram to illustrate on slides.}
+\vspace{1em}
+
+\emph{Syntax-Guided Synthesis (or SyGuS)} formalizes the problem of
+program synthesis where specification is supplemented with a syntactic
+template.  This defines a search space of possible programs that the synthesizer
+effectively traverses.  Many search strategies exist; two especially well-known
+strategies are \emph{enumerative search} (which can be remarkably effective,
+though rarely scales), and \emph{deductive} or \emph{top down} search, which
+recursively reduces the problem into simpler sub-problems.  
+
+\subsection{Oracle-guided synthesis}
+
+Templates or sketches are often helpful and easy to write.  However, they are
+not always available.  
+Beyond search or enumeration, constraint-based approaches translate a program's
+specification into a constraint system that is provided to a solver.  This can
+be especially effective if combined with an outer CEGIS loop that provides
+oracles.  
+
+This kind of synthesis can be effective when the properties we care about are
+relatively easy to verify.  For example, imagine we wanted to find a maximum
+number $m$ in a list $l$.
+
+\vspace{1em}
+\noindent\emph{Turn to the handout, which asks you to specify this as a synthesis problem...}
+
+
+ \[
+ \exists P_{max} \forall l, m : P_{max}(l) = m \implies ( m \in l ) \wedge
+ (\forall x \in l : m \ge x ) \]
+
+ Proving this involves the following formula:
+
+ \[
+ \forall l, m : P_{max}(l) = m \implies (m \in l) \wedge (\forall x \in l : m \ge
+ x)
+ \]
+
+Note that instead of proving that a program satisfies a given formula, we can
+instead disprove its negation, which is: 
+
+\[
+\exists l, m : ( P_{max} (l)  = m ) \wedge ( m \notin l \vee \exists x \in l : m <
+x)
+\]
+
+If the above is satisfiable, a solver will give us a counterexample, which we
+can use to strengthen the specification--so that next time the synthesis engine
+will give us a program that excludes this counterexample.  We can make this
+counterexample more useful by asking the solver not just to provide us with an input
+that produces an error, but also to provide the corresponding
+correct output $m^*$:
+
+\[
+\exists l, m^* : (P_{max}(l) \neq m^* ) \wedge (m^* \in l ) \wedge (\forall x
+\in l : m^* \ge x)
+\]
+
+This is a much stronger constraint than the original counterexample, as it says
+what the program should output in this case rather than one example of something it
+should not output.  Thus we now have an additional test case for the next round of
+synthesis.  This counterexample-guided sythesis
+approach was originally introduced for SKETCH, and was generalized to oracle-guided
+inductive synthesis by Jha and Seshia.  Different oracles have been developed
+for this type of synthesis.  We will discussed component-based oracle-guided
+program synthesis in detail, which illustrates the use of distinguishing
+oracles.
+
+
+\section{Oracle-guided Component-based Program Synthesis}
+
+\todo{instead of input_0, just pass first few varibles as arguments to a function "def f(z_0, ...)".  See exercise}
+\todo{m is number of inputs, but M is inputs + components.  Avoid confusion here?}
+
+\noindent \textbf{Problem statement and intuition.}\footnote{These notes are
+  inspired by Section III.B of Nguyen~\emph{et al.}, ICSE 2013~\cite{Nguyen2013} ...which provides
+  a really beautifully clear exposition of the work that originally proposed
+  this type of synthesis in Jha~\emph{et al.}, ICSE 2010~\cite{Jha2010}.}
+Given a set of input-output pairs  ${ < \alpha_0, \beta_0 > \ldots < \alpha_n, \beta_n > }$ and N components ${ f_1, \ldots f_n }$,  the goal is to synthesize a function $f$ out of the components such that $\forall \alpha_i. f(\alpha_i)$ produces $\beta_i$.
+%
+We achieve this by constructing and solving a set of constraints over $f$, passing those constraints to an SMT solver, and using a returned satisfying model to reconstruct $f$.
+In this approach, the synthesized function will have the following form:
+
+\[
+\begin{array}{ll}
+0 & z_0 := \mathtt{input}^0 \\
+1 & z_1 := \mathtt{input}^1 \\
+\ldots & \ldots \\
+m & z_m := \mathtt{input}^m \\
+m+1 & z_{m+1} := f_?(z_?, \ldots, z_?) \\
+m+2 & z_{m+2} := f_?(z_?, \ldots, z_?) \\
+\ldots & \ldots \\
+m+n & z_{m+n} := f_?(z_?, \ldots, z_?) \\
+m+n+1 & \mathtt{return}~ z_?
+\end{array}
+\]
+
+The thing we have to do is fill in the $?$ indexes in the program above.  These
+indexes essentially define the order in which functions are invoked and what
+arguments they are invoked with.
+We will assume that each component is used once, without loss of generality,
+since we can duplicate the components.
+
+\vspace{0.75em}
+\noindent\textbf{Definitions.}
+We will set up the problem for the solver using two sets of variables.  One set represents
+the input values passed to each component, and the output value that component produces,
+when the program is run for a given test case.  We use $\overrightarrow{\chi}_i$ to denote
+the vector of input values passed to component $i$ and $r_i$ to denote the result value
+computed by that component.  So if we have a single component (numbered 1) that adds
+two numbers, the
+input values $\overrightarrow{\chi}_1$ might be (1,3) for a given test case and the output
+$r_1$ in that case would be 4.  We use $Q$ to denote the set of all variables representing
+inputs and $R$ to denote the set of all variables representing outputs:
+
+\[
+\begin{array}{ccl}
+Q & := & \bigcup_{i=1}^N \overrightarrow{\chi}_i \\[0.5em]
+R & := & \bigcup_{i=1}^N {r_i}  \\[0.5em]
+\end{array}
+\]
+
+We also define the overall program's inputs to be the vector $\overrightarrow{Y}$ and the program's output to be $r$.
+
+The other set of variables determines the location of each component, as well
+as the locations at which each of its inputs were defined.  We call these \textit{location variables}.  For each variable $x$, we define a location variable $l_x$, which denotes where $x$ is defined.  Thus $l_{r_i}$ is the location variable for the result of component $i$ and $\overrightarrow{l_{\chi_i}}$ is the vector of location variables for the inputs of component $i$.
+So if we have $l_{r_3}=5$ and $\overrightarrow{l_{\chi_3}}$ is (2,4), then we will invoke component \#3 at line 5, and we will pass variables $z_2$ and $z_4$ to it.
+$L$ is the set of all location variables:
+
+\[
+\begin{array}{ccl}
+L & := & \{l_x | x \in Q \cup R \cup \overrightarrow{Y} \cup {r}\} 
+\end{array}
+\]
+
+We will have two sets of constraints: one to ensure the program is \emph{well-formed}, and the other that ensures the program encodes the desired \emph{functionality}.
+
+\vspace{0.75em}
+\noindent\textbf{Well-formedness.}  $\psi_{wfp}$ denotes the well-formedness constraint.  Let $M = |\overrightarrow{Y}| + N$, where $N$ is the number of available components:
+
+\[
+\begin{array}{ll}
+\psi_{wfp}(L,Q,R)  \stackrel{def}{=} & \bigwedge\limits_{x \in Q} ( 0 \leq l_x < M)~ \wedge 
+ \bigwedge\limits_{x\in R} (|\overrightarrow{Y}| \leq l_x < M) ~\wedge \\
+& \psi_{cons}(L,R) \wedge  \psi_{acyc}(L,Q,R)
+\end{array}
+\]
+
+The first line of that definition says that input locations are in the range 0 to $M$, while component output locations are all defined after program inputs are declared.  $\psi_{cons}$ and $\psi_{acyc}$ dictate that there is only one component in each line and that the inputs of each component are defined before they are used, respectively:
+
+\[
+\begin{array}{rcl}
+\psi_{cons}(L,R) & \stackrel{def}{=} & \bigwedge\limits_{x,y \in R, x\not\equiv y} (l_x \neq l_y)  \\[0.5em]
+\psi_{acyc}(L,Q,R) & \stackrel{def}= & \bigwedge\limits_{i=1}^N \bigwedge\limits_{x \in\overrightarrow{\chi}_i, y \equiv r_i} l_x < l_y
+\end{array}
+\]
+
+\vspace{0.75em}
+ \noindent\textbf{Functionality.} $\phi_{func}$ denotes the functionality constraint that guarantees that the solution $f$ satisfies the given input-output pairs:
+ 
+ \[
+ \begin{array}{rcl}
+ \phi_{func}(L,\alpha,\beta) & \stackrel{def}{=} & \psi_{conn}(L, \overrightarrow{Y}, r, Q, R) \wedge ~ \phi_{lib}(Q,R) ~\wedge (\alpha = \overrightarrow{Y}) \wedge (\beta = r) \\ [0.5em]
+ 
+  \psi_{conn}(L,\overrightarrow{Y},r,Q,R) & \stackrel{def}{=} & \bigwedge \limits_{x,y \in Q \cup R \cup \overrightarrow{Y} \cup \{ r \}} (l_x = l_y \implies x = y) \\ [0.5em]
+     
+ \phi_{lib}(Q,R) & \stackrel{def}{=} & ( \bigwedge\limits_{i=1}^{N} 
+ \phi_i  (\overrightarrow{\chi}_i,  r_i)) \\ 
+ 
+ \end{array}
+ \]
+ 
+ $\psi_{conn}$ encodes the meaning of the location variables: If two locations are equal, then the values of the variables defined at those locations are also equal.  $\phi_{lib}$ encodes the semantics of the provided basic components, with $\phi_i$ representing the specification of component $f_i$.  The rest of $\phi_{func}$ encodes that if the input to the synthesized function is $\alpha$, the output must be $\beta$.  
+ 
+ Almost done!  $\phi_{func}$ provides constraints over a single input-output pair $\alpha_i, \beta_i$, we still need to generalize it over all $n$ provided pairs $\{ < \alpha_i, \beta_i > | 1 \leq i \leq n \}$:
+ 
+ \[
+ \begin{array}{c}
+ \theta \stackrel{def}{=} ( \bigwedge \limits_{i=1}^n \phi_{func}(L, \alpha_i, \beta_i)) \wedge \psi_{wfp}(L, Q,R)
+ \end{array}
+ \]
+
+$\theta$ collects up all the previous constraints, and says that the synthesized function f should satisfy all input-output pairs and the function has to be well formed.  
+
+ \paragraph{LVal2Prog.}  The only real unknowns in all of $\theta$ are the values for the location variables $L$.  So, the solver that provides a satisfying assignment to $\theta$ is basically giving a valuation of $L$ that we then turn into a constructed program as follows:
+ 
+Given a valuation of $L$, $\mathtt{Lval2Prog(L)}$ converts it to a program as follows: The $i^{th}$ line of the  program is $z_i = f_j(z_{\sigma_1}, ..., r_{\sigma_\upeta})$  
+when $l_{r_j} == i$ and $\bigwedge\limits_{k=1}^{\upeta} (l_{\chi_j^k} == \sigma_k)$, where $\upeta$ is the number of inputs for component $f_j$ and $\chi_j^k$ denotes the $k^{th}$ input parameter of component $f_j$.  The program output is produced in line $l_r$.  
+
+\paragraph{Example.}  Assume we only have one component, +.  + has two inputs: $\chi^1_+$ and $\chi^2_+$.  The output variable is $r_+$.  Further assume that the desired program $f$ has one input $Y_0$ (which we call $\mathtt{input}^0$ in the actual program text) and one output $r$.  Given a mapping for location variables of: 
+$\{ l_{r_+}\mapsto 1, l_{\chi^1_+} \mapsto 0, l_{\chi^2_+} \mapsto 0, l_r \mapsto 1, l_Y \mapsto 0 \}$, then the program looks like:
+
+\[
+\begin{array}{ll}
+0 & z_0 := \mathtt{input}^0 \\
+1 & z_1 := z_0 + z_0 \\
+2 & \mathtt{return}~ z_1
+\end{array}
+\]
+
+This occurs because the location of the variables used as input to + are both on the same line (0), which is also the same line as the input to the program (0).  $l_r$, the return variable of the program, is defined on line 1, which is also where the output of the + component is located.  ($l_{r_+}$).  We added the return on line 2 as syntactic sugar.
+
+\bibliographystyle{abbrv}
+\bibliography{synthesis}
+
+\end{document}

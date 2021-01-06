@@ -1,0 +1,461 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <title>17-355/17-665/17-819: Program Analysis</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  <script>
+    function toggle() { document.getElementById("navigation").classList.toggle("hidden"); document.getElementsByTagName("body")[0].classList.toggle("push"); }
+  </script>
+    <meta content="17-355/17-665/17-819: Program Analysis" name="description">
+  </head>
+  <body>
+<nav id="navigation" class="hidden">
+  <div class="container">
+    <div class="course-semester">
+      <div class="course"><a href="https://cmu-program-analysis.github.io">17-355/17-665/17-819</a></div>
+      <div class="semester">Spring 2021</div>
+    </div>
+    <div id="hamburger" onclick="toggle()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <ul>
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="syllabus.html">Syllabus</a></li>
+      <li onclick="toggle()"><a href="index.html#schedule">Schedule</a></li>
+      <li><a href="https://canvas.cmu.edu/courses/000000/">Canvas</a></li>
+      <li><a href="https://github.com/CMU-program-analysis/CMU-program-analysis.github.io"><img src="github.svg" style="width:20px" alt="github logo"/></a></li>
+    </ul>
+  </div>
+</nav>
+
+<header id="top" class="container">
+  <h1>17-355/17-665/17-819 Program Analysis</h1>
+</header>
+
+<div id="main" class="container">
+
+  <div class="cf">
+
+  <h2>Course Description</h2>
+  <p>This course covers both foundations and practical aspects of the automated
+  analysis of programs, which is becoming increasingly critical to find software
+  errors and assure program correctness.  The theory of abstract interpretation
+  captures the essence of a broad range of program analyses and supports
+  reasoning about their correctness.  Building on this foundation, the course
+  will describe program representations, data flow analysis, alias analysis,
+  interprocedural analysis, dynamic analysis, and symbolic execution.  Through
+  assignments and projects, students will design and implement practical
+  analysis tools that find bugs and verify properties of software.</p>
+
+<p><i> This course fulfills the <b>Logic and Languages constrained elective category</b> for the Computer Science major.</i></p>  
+
+    <h3><span style="color:brown">Why take this course?</span></h3>
+    <ul>
+      <li><b>Explore the meaning of programs.</b>  One of the most basic questions that programmers ask is "What does this program do?"  Program analysis is all about understanding programs--automatically!</li>
+      <li><b>Learn deep theory.</b>  The theory of abstract interpretation stands with type theory as the most important and beautiful foundations of programming languages.  Abstract interpretation is the fundamental theory of abstraction: how to precisely relate the concrete execution of a program to an abstraction of that execution.  Naturally, this has many applications, which brings us to the third reason to take this course:</li>
+      <li><b>Build awesome tools.</b>  Using program analysis, you can build tools that find bugs, prove important security and correctness properties, automatically generate useful tests, and much more--and you'll have a chance to do all of this in course assignments and a project that you can design yourself (if you want).</li>
+    </ul>
+
+<h2>Logistics and People</h2>
+      <p>Class: Tu/Th 10:40 a.m. - 12:00 noon in <abbr title="Porter Hall">PH</abbr> 100 and via Zoom (in-person + remote)<br />
+      Recitation: F 2:10 p.m. - 3:00 p.m. <del>in <abbr title="Wean Hall">WEH</abbr> 7500</del> via Zoom (remote only)<br />
+      Spring 2021<br />
+      12 units</p>
+    <div class="instructor">
+      Professor <strong><a href="https://www.cs.cmu.edu/~aldrich/">Jonathan Aldrich</a></strong><br>
+      <abbr title="TCS Hall">TCS</abbr> XXXX<br />
+      Office hours: XXXX, or by appointment<br />
+      Email: aldrich@cs.cmu.edu<br />
+      <img src="aldrich.jpg" alt="Headshot of Professor Jonathan Aldrich" />
+    </div>
+    <div class="instructor">
+      Professor <strong><a href="https://rohan.padhye.org">Rohan Padhye</a></strong><br>
+      <abbr title="TCS Hall">TCS</abbr> XXXX<br />
+      Office hours: XXXX, or by appointment<br />
+      Email: rohanpadhye@cmu.edu<br />
+      <img src="padhye.jpg" alt="Headshot of Professor Jonathan Aldrich" />
+    </div>
+<!--      <div class="instructor">
+       <strong><a href="https://www.cs.cmu.edu/~jlacomis/">TA: Priya Lacomis</a></strong><br>
+       <abbr title="Wean Hall">WEH</abbr> 5119<br />
+      Office hours: W 12:30 - 1:30<br />
+       Email: jlacomis@cmu.edu<br />
+        <img src="jl.jpg" alt="Headshot of teaching assistant Jeremy Lacomis" />
+    </div> -->
+  </div>
+
+  <h2>Course Syllabus and Policies</h2>
+    <p>The <a href="syllabus.html">syllabus</a> covers course learning objectives, supplemental textbooks, assessments, late work policy, and policies.  Consult Canvas and especially Piazza for up-to-date announcements and discussion (links in header).</p>
+
+<!--
+  LINK NOTES TO LECTURE TOPIC
+  EXAMPLES OF HOMEWORK TAGS:
+	<span class="hw">reading</span> Larman ch. 14 and 16<br>
+	<span class="hw">hw1</span> Intro to design, course infrastructure
+-->
+  <section id="schedule">
+    <h2>Schedule</h2>
+
+    <p>As of January 2021, we have endeavored to make this schedule, including assignment due dates, as accurate as possible.  However, it is subject to change as the semester advances.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px;">Date</th>
+          <th>Topic</th>
+          <th>Reading/Material</th>
+          <th>Assignments Due</th>
+          <th>Optional Reading</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 2</td>
+          <td>Introduction, Program Representation, and Syntactic Analysis</td>
+          <td></td>
+          <td></td>
+          <td>PPA ch. 1</td>
+        </tr>
+        <tr>
+          <td>Feb 4</td>
+          <td>Program Semantics</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 5</td>
+          <td><span class="rec">recitation</span> CodeQL</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 1 -->
+
+        <tr>
+          <td>Feb 9</td>
+          <td>Dataflow Analysis and Abstract Interpretation</td>
+          <td></td>
+          <td></td>
+          <td>PPA ch. 2</td>
+        </tr>
+        <tr>
+          <td>Feb 11</td>
+          <td>Dataflow Analysis and Abstract Interpretation (contd.)</td>
+          <td></td>
+          <td></td>
+          <td>PPA ch. 6</td>
+        </tr>
+        <tr>
+          <td>Feb 12</td>
+          <td><span class="rec">recitation</span> Semantics</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 2 -->
+		
+        <tr>
+          <td>Feb 16</td>
+          <td>Dataflow Analysis examples</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 18</td>
+          <td>Dataflow Analysis examples (contd.)</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 19</td>
+          <td><span class="rec">recitation</span> Specifying/Implementing Dataflow Analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 3 -->
+		
+        <tr class="noclass">
+          <td>Feb 23</td>
+          <td>No class</td>
+          <td>Dataflow Analysis termination and complexity</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 25</td>
+          <td>Widening Operators and Collecting Semantics/td>
+          <td></td>
+          <td></td>
+          <td>PPA ch. 4</td>
+        </tr>
+        <tr>
+          <td>Feb 26</td>
+          <td><span class="rec">recitation</span> Correctness of Program Analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 4 -->
+		
+        <tr>
+          <td>Mar 2</td>
+          <td>Interprocedural analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 4</td>
+          <td>Context-Sensitive Interprocedural Analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+
+        </tr>
+        <tr>
+          <td>Mar 5</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 5 -->
+		
+        <tr>
+          <td>Mar 9</td>
+          <td>Pointer Analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 11</td>
+          <td>Pointer Analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 12</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 6 -->
+		
+        <tr>
+          <td>Mar 16</td>
+          <td>Control-Flow Analysis for Functional Languages</td>
+          <td></td>
+          <td></td>
+          <td>PPA ch. 3</td>
+        </tr>
+        <tr>
+          <td>Mar 18</td>
+          <td>Hoare-style Verification</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Mar 19</td>
+          <td><span class="rec">no recitation</span></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 7 -->
+		
+        <tr class="midterm">
+          <td>Mar 23</td>
+          <td>Midterm Exam</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 25</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 26</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 8 -->
+
+        <tr>
+          <td>Mar 30</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 1</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 2</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 9 -->
+		
+        <tr>
+          <td>Apr 6</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 8</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 9</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 10 -->
+		
+        <tr>
+          <td>Apr 13</td> 
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Apr 15</td>
+          <td>No class, Spring Break</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Apr 16</td>
+          <td><span class="rec">no recitation</span> Spring Break</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 11 -->
+		
+        <tr>
+          <td>Apr 20</td> 
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 22</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 23</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 12 -->
+		
+        <tr>
+          <td>Apr 27</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 29</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 30</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 13 -->
+		
+        <tr>
+          <td>May 4</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 6</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 7</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week  14-->
+		
+        <tr class="final">
+          <td>May 10--14 (Finals Week)</td>
+          <td>Project presentations</td>
+          <td></td>
+          <td><a class="hw" href="homework/project.pdf">Project</a> presentations</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 17</td>
+          <td></td>
+          <td></td>
+          <td><span class="hw">project</span> final report due</td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+      </tbody>
+    </table>
+  </section>  
+  
+</div>
+  </body>
+</html>
