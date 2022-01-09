@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <title>17-355/17-665/17-819: Program Analysis</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta content="17-355/17-665/17-819: Program Analysis" name="description">
+  </head>
+  <body>
+<nav id="navigation">
+  <div class="container">
+    <div class="course-semester">
+      <div class="course"><a href="https://cmu-program-analysis.github.io">17-355/17-665/17-819</a></div>
+      <div class="semester">Spring 2022</div>
+    </div>
+    <div id="hamburger" onclick="toggle()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <ul>
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="syllabus.html">Syllabus</a></li>
+      <li><a href="index.html#schedule">Schedule</a></li>
+      <li><a href="https://canvas.cmu.edu/courses/27636">Canvas</a></li>
+      <li><a href="https://piazza.com/class/#">Piazza</a></li>
+      <li><a href="https://github.com/CMU-program-analysis/CMU-program-analysis.github.io"><img src="github.svg" style="width:20px" alt="github logo"/></a></li>
+    </ul>
+  </div>
+</nav>
+
+<header id="top" class="container">
+  <h1>17-355/17-665/17-819 Program Analysis</h1>
+</header>
+
+<div id="main" class="container">
+
+  <div class="cf">
+
+  <h2>Course Description</h2>
+  <p>This course covers both foundations and practical aspects of the automated
+  analysis of programs, which is becoming increasingly critical to find software
+  errors and assure program correctness.  The theory of abstract interpretation
+  captures the essence of a broad range of program analyses and supports
+  reasoning about their correctness.  Building on this foundation, the course
+  will describe program representations, data flow analysis, alias analysis,
+  interprocedural analysis, dynamic analysis, and symbolic execution.  Through
+  assignments and projects, students will design and implement practical
+  analysis tools that find bugs and verify properties of software.</p>
+
+<p><em>This course fulfills the <strong>Logic and Languages constrained elective category</strong> for the Computer Science major as well as the <strong>Theoretical Foundations</strong> requirement of the Computer Science master's degree.</em></p>  
+
+    <h3><span style="color:brown">Why take this course?</span></h3>
+    <ul>
+      <li><b>Explore the meaning of programs.</b>  One of the most basic questions that programmers ask is "What does this program do?"  Program analysis is all about understanding programs--automatically!</li>
+      <li><b>Learn deep theory.</b>  The theory of abstract interpretation stands with type theory as the most important and beautiful foundations of programming languages.  Abstract interpretation is the fundamental theory of abstraction: how to precisely relate the concrete execution of a program to an abstraction of that execution.  Naturally, this has many applications, which brings us to the third reason to take this course:</li>
+      <li><b>Build awesome tools.</b>  Using program analysis, you can build tools that find bugs, prove important security and correctness properties, automatically generate useful tests, and much more--and you'll have a chance to do all of this in course assignments and a project that you can design yourself (if you want).</li>
+    </ul>
+
+<h2>Logistics and People</h2>
+      <p>(all times below in US Eastern Time; see <a href="https://canvas.cmu.edu/courses/27636">Canvas</a> for Zoom meeting links)</p>
+
+      <p>Class: Tue/Thu 10:10 a.m. — 11:30 a.m. in <abbr title="Gates & Hillman Centers">GHC</abbr> 4101 or via <a href="https://canvas.cmu.edu/courses/27636/external_tools/8366">Zoom</a> (see schedule)<br />
+      Recitation: Fri 10:10 a.m. — 11:00 a.m. via in <abbr title="Mellon Institute">MI</abbr> 348 or via <a href="https://canvas.cmu.edu/courses/27636/external_tools/8366">Zoom</a> (see schedule)<br />
+      Spring 2022<br />
+      12 units</p>
+    <div class="instructor">
+      Professor <strong><a href="https://rohan.padhye.org">Rohan Padhye</a></strong><br>
+      <abbr title="TCS Hall">TCS</abbr> 325<br />
+      Office hours: TBD<br />
+      Email: rohanpadhye@cmu.edu<br />
+      <img src="padhye.jpg" alt="Headshot of Professor Rohan Padhye" />
+    </div>
+      <div class="instructor">
+       TA: <strong><a href="https://www.andrew.cmu.edu/user/ilaybour/">Bella Laybourn</a></strong><br />
+       <br />
+      Office hours: TBD via <a href="https://canvas.cmu.edu/courses/27636/external_tools/8366">Zoom</a><br />
+       Email: ilaybour@andrew.cmu.edu<br />
+        <img src="bella.jpg" alt="Headshot of teaching assistant Bella Laybourn" />
+    </div>
+  </div>
+
+  <h2>Course Syllabus and Policies</h2>
+    <p>The <a href="syllabus.html">syllabus</a> covers course learning objectives, supplemental textbooks, assessments, late work policy, and policies.  Consult Canvas and especially Piazza for up-to-date announcements and discussion (links in header).</p>
+
+<!--
+  LINK NOTES TO LECTURE TOPIC
+  EXAMPLES OF HOMEWORK TAGS:
+	<span class="hw">reading</span> Larman ch. 14 and 16<br>
+	<span class="hw">hw1</span> Intro to design, course infrastructure
+-->
+  <section id="schedule">
+    <h2>Schedule</h2>
+
+    <p>The schedule is currently being developed and will be ready before the first day of class: January 18, 2022.</p>
+
+    <!--<p>As of January 2022, we have endeavored to make this schedule, including assignment due dates, as accurate as possible.  However, it is subject to change as the semester advances. "Hybrid" modality indicates in-person + remote.</p>-->
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 55px;">Date</th>
+          <th>Topic</th>
+          <th>Reading/Material</th>
+          <th>Assignments Due</th>
+          <th>Modality</th>
+          <th>Optional Reading</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 2</td>
+          <td>Introduction, Program Representation, and Syntactic Analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 1-2, <a href="lecture-slides/01-introduction.pdf">slides</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td>PPA ch. 1</td>
+        </tr>
+        <tr>
+          <td>Feb 4</td>
+          <td>Program Semantics</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 3, <a href="lecture-slides/02-semantics.pdf">slides</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 5</td>
+          <td><span class="rec">recitation</span> CodeQL</td>
+	  <td><a href="https://github.com/CMU-program-analysis-sp21/recitation1">notes</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 1 -->
+
+        <tr>
+          <td>Feb 9</td>
+          <td>Dataflow Analysis and Abstract Interpretation</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 4, <a href="lecture-slides/03-dataflow-frameworks.pdf">slides</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td>PPA ch. 2</td>
+        </tr>
+        <tr>
+          <td>Feb 11</td>
+          <td>Dataflow Analysis and Abstract Interpretation (contd.)</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 4, <a href="lecture-slides/04-dataflow-frameworks-contd.pdf">slides</a>
+          <td><span class="hw">hw1</span> <a href="https://canvas.cmu.edu/courses/27636/assignments/344354">hw1</a></td>
+          <td>Remote</td>
+          <td>PPA ch. 6</td>
+        </tr>
+        <tr>
+          <td>Feb 12</td>
+          <td><span class="rec">recitation</span> Semantics</td>
+          <td><a href="recitation/recitation2-exercises.pdf">exercises</a>, <a href="recitation/recitation2-notes.pdf">notes</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 2 -->
+		
+        <tr>
+          <td>Feb 16</td>
+          <td>Dataflow Analysis examples</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 5, <a href="lecture-slides/05-dataflow-examples.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 18</td>
+          <td>Dataflow Analysis examples (contd.)</td>
+          <td>(see previous)</td>
+          <td><span class="hw">hw2</span> <a href="homework/hw2.pdf">pdf</a>
+          <a href="resources/mathpartir.zip">mathpartir</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 19</td>
+          <td><span class="rec">recitation</span> Specifying/Implementing Dataflow Analysis</td>
+          <td></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 3 -->
+		
+        <tr class="noclass">
+          <td>Feb 23</td>
+          <td>No class</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Feb 25</td>
+          <td>Dataflow Analysis termination and correctness</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 6, <a href="lecture-slides/06-termination-correctness.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td>PPA ch. 4</td>
+        </tr>
+        <tr>
+          <td>Feb 26</td>
+          <td><span class="rec">recitation</span> Correctness of Program Analysis</td>
+          <td><a href="recitation/recitation4-exercises.pdf">exercises</a>, <a href="recitation/recitation4-notes.pdf">notes</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 4 -->
+		
+        <tr>
+          <td>Mar 2</td>
+          <td>Widening Operators and Collecting Semantics</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 7, <a href="lecture-slides/07-widening-collecting.pdf">slides</a></td>
+          <td><span class="hw">hw3</span> <a href="homework/hw3.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 4</td>
+          <td>Interprocedural analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 8, <a href="lecture-slides/09-interprocedural-analysis.pdf">slides</a>, <a href="lecture-notes/simplified-ip-alg.pdf">simplified algorithm</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+
+        </tr>
+        <tr>
+          <td>Mar 5</td>
+          <td><span class="rec">recitation</span> Introduction to Soot</td>
+          <td><a href="recitation/recitation-5-notes.pdf">notes</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 5 -->
+		
+        <tr>
+          <td>Mar 9</td>
+          <td>Context-Sensitive Analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 8 & ch. 10.2 <a href="lecture-slides/10-context-sensitive-analysis.pdf">slides</a>, <a href="lecture-notes/simplified-ip-alg.pdf">simplified algorithm</a></td>
+          <td><span class="hw">hw4</span> <a href="homework/hw4.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 11</td>
+          <td>Pointer Analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 10 <a href="lecture-slides/11-pointer-analysis.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 12</td>
+          <td><span class="rec">recitation</span> Midterm review</td>
+          <td><a href="recitation/midterm-studyguide.pdf">Midterm Study Guide</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 6 -->
+		
+        <tr class="midterm">
+          <td>Mar 15</td>
+          <td></td>
+          <td></td>
+          <td><span class="hw">midterm</span> <br />8am take-home exam released</td>
+          <td></td>
+          <td></td>
+        </tr><tr></tr><tr></tr>
+        <tr>
+          <td>Mar 16</td>
+          <td>Hoare-style Verification</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 11, <a href="lecture-slides/12-hoare-logic.pdf">slides</a></td>
+          <td><span class="hw">hw5</span> (checkpoint) <a href="homework/hw5.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td>PPA ch. 3</td>
+        </tr>
+        <tr>
+          <td>Mar 18</td>
+          <td>Control-Flow Analysis for Functional Languages</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 8 <a href="lecture-slides/13-cfa.pdf">slides</a></td>
+          <td class="midterm"><span class="hw">midterm</span> <br />take-home exam due</td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Mar 19</td>
+          <td><span class="rec">no recitation</span></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 7 -->
+		
+        <tr>
+          <td>Mar 23</td>
+          <td>Hoare-style Verification (contd.)</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 11, <a href="lecture-slides/14-hoare-logic.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 25</td>
+          <td>Symbolic Execution</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 13, <a href="lecture-slides/15-symbolic-execution.pdf">slides</a></td>
+          <td><span class="hw">hw5</span> <a href="homework/hw5.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Mar 26</td>
+          <td><span class="rec">recitation</span> </td>
+          <td><a href="recitation/recitation7-exercise.pdf">exercises</a>, <a href="recitation/recitation7-notes.pdf">notes</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 8 -->
+
+        <tr>
+          <td>Mar 30</td>
+          <td>Concolic Testing</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 14, <a href="lecture-slides/16-concolic-testing.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 1</td>
+          <td>Fuzz Testing</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 16, <a href="lecture-slides/17-fuzzing.pdf">slides</a></td>
+          <td><span class="hw">hw6</span> <a href="homework/hw6.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 2</td>
+          <td><span class="rec">recitation</span></td>
+          <td><a href="https://github.com/CMU-program-analysis-sp21/recitation-8">repository</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 9 -->
+		
+        <tr>
+          <td>Apr 6</td>
+          <td>Satisfiability Modulo Theories (SMT)</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 12, <a href="lecture-slides/18-smt.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 8</td>
+          <td>Program Synthesis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 15, <a href="lecture-slides/19-synthesis.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 9</td>
+          <td><span class="rec">recitation</span> </td>
+    	  <td><a href="https://github.com/CMU-program-analysis-sp21/recitation-9">repository</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 10 -->
+		
+        <tr>
+          <td>Apr 13</td> 
+          <td>Oracle-Guided Synthesis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 15, <a href="lecture-slides/20-oracle-guided.pdf">slides</a></td>
+          <td><span class="hw">hw7</span> <a href="homework/hw7.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Apr 15</td>
+          <td>No class</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Apr 16</td>
+          <td><span class="rec">no recitation</span></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 11 -->
+		
+        <tr>
+          <td>Apr 20</td> 
+          <td>Introduction to Program Repair</td>
+          <td><a href="lecture-slides/21-program-repair.pdf">slides</a>, <a href="https://cacm.acm.org/magazines/2019/12/241055-automated-program-repair/fulltext">CACM article</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 22</td>
+          <td>Beyond Program Repair</td>
+          <td><a href="lecture-slides/22-repair-extras.pdf">slides</a></td>
+		<td><span class="hw">hw8</span> (incl. <a href="homework/project.pdf">project</a> proposal) <a href="homework/hw8.pdf">pdf</a></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 23</td>
+          <td><span class="rec">recitation</span></td>
+          <td><a href="https://canvas.cmu.edu/courses/27636/quizzes/59569">material</a></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 12 -->
+		
+        <tr>
+          <td>Apr 27</td>
+          <td>Model Checking</td>
+          <td><a href="lecture-slides/23-model-checking.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 29</td>
+          <td>Software Model Checking</td>
+          <td><a href="lecture-slides/24-cegar.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Apr 30</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week 13 -->
+		
+        <tr>
+          <td>May 4</td>
+          <td>Dynamic Analysis for Data Race Detection</td>
+          <td><a href="lecture-slides/25-datarace.pdf">slides</a></td>
+          <td><span class="hw">checkpoint</span> for project</td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 6</td>
+          <td>Scaling Up Verification</td>
+          <td><a href="lecture-slides/26-heap-verification.pdf">slides</a></td>
+          <td></td>
+          <td>Hybrid</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 7</td>
+          <td><span class="rec">recitation</span> </td>
+          <td></td>
+          <td></td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <!-- End Week  14-->
+		
+        <tr class="final">
+          <td>May 14, 1—4pm</td>
+          <td>Project presentations</td>
+          <td></td>
+          <td><a class="hw" href="homework/project.pdf">Project</a> presentations</td>
+          <td>Remote</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>May 17</td>
+          <td></td>
+          <td></td>
+          <td><span class="hw">project</span> final report due</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week -->
+		
+      </tbody>
+    </table>
+  </section>  
+  
+</div>
+  </body>
+</html>
