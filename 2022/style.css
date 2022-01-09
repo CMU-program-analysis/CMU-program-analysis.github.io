@@ -91,7 +91,7 @@ section:last-child { border: 0; }
 .container {
   padding-left: 5%;
   padding-right: 5%;
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
 }
   .cf:before,
