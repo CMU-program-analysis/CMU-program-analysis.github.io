@@ -1,0 +1,343 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <title>17-355/17-665/17-819: Program Analysis</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  <script>
+    function toggle() { document.getElementById("navigation").classList.toggle("hidden"); document.getElementsByTagName("body")[0].classList.toggle("push"); }
+  </script>
+    <meta content="Claire Le Goues" name="author">
+    <meta content="17-355/17-665/17-819: Program Analysis" name="description">
+  </head>
+  <body>
+<nav id="navigation" class="hidden">
+  <div class="container">
+    <div class="course-semester">
+      <div class="course"><a href="index.html">17-355/17-665/17-819</a></div>
+      <div class="semester">Fall 2024</div>
+    </div>
+    <div id="hamburger" onclick="toggle()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+</nav>
+
+<header id="top" class="container">
+  <h1>Program Analysis <small>Course Syllabus and Policies</small></h1>
+</header>
+
+<div id="main" class="container">
+
+<h3>Learning Objectives</h3>
+
+<p>The learning goals describe what we want students to know or be able to do by
+  the end of the semester. We evaluate whether learning goals have been achieved
+  through assignments, in-class discussion and exercises, exams, and the final
+  project.  These goals are:</p>
+
+<ul>
+  <li>Students will learn to implement program analyses that verify program
+  properties and find bugs using dataflow analysis, interprocedural analysis,
+  pointer analysis, Hoare logic, symbolic execution, and dynamic 
+  analysis.  Furthermore, they will learn how
+  program analysis frameworks can leverage abstract interpretation ideas in
+  order to reuse the vast majority of analysis boilerplate.</li>
+  <li>Students will learn to use abstract interpretation to formally prove that
+  an analysis is sound and will terminate.  They will also learn to analyze the
+  scalability of a program analysis and compare the precision of different
+  analysis techniques.</li>
+</ul>
+
+The course will also teach more general, transferrable skills in computer science.  These include:
+
+<ul>
+  <li>The ability to reason rigorously about what code does.</li>
+  <li>The ability to formally model discrete software systems and prove theorems about those models.</li>
+  <li>The ability to build moderate-scale programs using software frameworks.</li>
+  <li>The ability to run large, existing open-source tools.</li>
+</ul>
+
+<hr />
+
+<h3>Prerequisites</h3>
+<p>15-251 and (15-150 or 15-214)</p>
+
+<hr />
+
+<h3>Degree Requirements Fulfilled</h3>
+
+<p><strong>Undergraduates</strong>: This course can be used to satisfy the <em>Logic and Languages</em>
+constrained elective category of the Computer Science Bachelor's Degree.  It
+also satisfies the <em>Technical Software Engineering</em> requirement for the Software
+Engineering minor, subject to double-counting rules.</p>
+<p><strong>Masters</strong>: The course is preapproved for the <em>Theoretical Foundations</em>
+requirement of the Computer Science master's degree.</p>
+<p><strong>PhD students</strong>: This course satisfies the <em>SYM</em> area requirement for the 
+SE PhD. It has also been used to satisfy the <em>Algorithms/Complexity/Programming
+Languages</em> requirement for the ECE PhD by previous students.</p>
+
+<hr />
+
+
+<h3 id="topics">Syllabus</h3>
+
+Topics covered in this course include:
+<ul>
+  <li>Program Representations: ASTs, control-flow graphs, stack machines</li>
+  <li>Program Semantics</li>
+  <li>Data-Flow Analysis: theoretical framework, sample analyses, soundness and correctness, termination and complexity</li>
+  <li>Interprocedural Data-Flow Analysis: context-sensitivity, precision, termination</li>
+  <li>Control-Flow Analysis for Functional Languages</li>
+  <li>Pointer Analysis: Andersen and Steengaard's analysis, field sensitivity for object-oriented languages, call graph construction with dynamic dispatch</li>
+  <li>Hoare logic: axiomatic semantics, Hoare triples, strogest postconditions and weakest preconditions, proving properties of programs</li>
+  <li>Software Model Checking</li>
+  <li>Satisfiability Modulo Theories: SAT, SMT, DPLL</li>
+  <li>Symbolic Excution and Concolic Testing</li>
+  <li>Fuzz Testing: white-box and grey-box analysis</li>
+  <li>Dynamic Analysis: examples for concurrency, software engineering applications</li>
+  <li>Program Synthesis</li>
+  <li>Program Repair</li>
+  <li>Program analyses for improving performance and security</li>
+</ul>
+
+
+<h3 id="evaluation">Assessments</h3>
+<p>The final course grade will be calculated using the following categories and percentages:</p>
+<ul>
+  <li>40% homework assignments</li>
+  <li>30% two midterm exams</li>
+  <li>20% final project</li>
+  <li>10% exercises and in-class participation</li>
+</ul>
+
+<p><b>Assignments</b> are a mixture of formal definitions/proofs covering
+analysis theory and programming exercises that cover the principled
+construction of program analyses.  Both forms of assignments will be assessed
+based on correctness and clarity of the definitions and of the analysis
+implementation, respectively. </p>
+<p>Assignments will be submitted via <a href="https://www.github.com">Github</a>, 
+<a href="https://www.gradescope.com/">Gradescope</a>, and/or <a href="https://canvas.cmu.edu/">Canvas</a>, 
+as appropriate.</p>
+
+<p>There will be two open-book <b>midterm exams</b>.<!--, which will be given as a take-home assignment. -->
+The exams will be designed so that a well-prepared student can complete them within
+the 80-minute class period.  As time pressure is not the point of the exam, the
+instructors will make arrangements for students to take extra time after the
+class period if needed.</p>
+
+<p>The <b>semester project</b> will be student-selected.  Students will have
+  several options:
+<ul>
+<li>A student-defined analysis implementation or other research
+  project.  This is the default assumed project for enrolled Ph.D. students, who
+  are generally expected to take on a project of larger scope that engages with
+  (typically their) research.</li>
+<li>A student-selected, but instructor-guided program analysis-related project
+  with a research angle.  This option is intended to provide guidance for
+  typically non-PhD students who would like to explore program analysis research
+  but do not yet have sufficient exposure to research to define their own
+  project.</li>
+<li>A substantive pull request contributing to a real-world program analysis tool
+  or framework.</li>
+<li>A substantive analysis implementation project.</li>
+</ul>
+
+<p>In addition to code and a write-up, the projects will involve a <i>checkpoint
+report</i> (intended to overview the background on the project in question and
+establish progress, guidelines to be provided) and a <i>final presentation</i>,
+describing what the student(s) actually did/accomplished. 
+
+<p>Students will be permitted (but not required) to work with partners for the
+final project; we expect partnered projects to be larger in scope than solo
+projects.  Graduate (PhD) students are expected to take on projects of
+non-trivial, research-oriented scope, regardless of whether they work alone or
+in pairs.</p>
+
+<p><b>Class participation and readings</b> are important, as most material will
+be communicated via lectures or readings and reinforced with in-class
+activities. In most class periods there will be an in-class exercise designed to
+allow students to practice the material being taught. Students will earn 
+participations for completing each day's in-class exercise (regardless of
+the answers given).  We will drop some number (approximately 4) of the quizzes automatically.  Students missing class due to unavoidable circumstances 
+(e.g. health or family-related matters) can make up participation points
+by attending the instructor's office hours after having read the lecture notes for
+this missed class, coming with a couple of questions or comments prepared for 
+discussion.
+
+<hr />
+
+<h3 id="textbooks">Supplemental Textbook</h3>
+
+<p>The primary reference for this course are the provided 
+<a href="resources/program-analysis.pdf">course notes</a>.  For
+those who would like to have a second textbook as a reference, the course
+schedule indicates when certain topics are covered in the supplemental text.
+These readings are <strong>optional</strong> but we provide them for those who
+would like a second reference.  The supplemental text is:</p>
+
+<p>Nielson, Nielson, and
+Hankin. <a href="https://link.springer.com/book/10.1007/978-3-662-03811-6">Principles of
+Program Analysis</a> (PPA).</p>
+
+<hr />
+
+<h3>Time Management</h3>
+
+<p>
+This is a 12-unit course, and it is our intention to manage it so that
+you spend close to 12 hours a week on the course, on average. In
+general, 4 hours/week will be spent in class and 8 hours on
+assignments. Please feel free to give the course staff feedback
+on how much time the course is taking for you.
+</p>
+
+<hr />
+
+<h3 id="late-work">Late Work Policy</h3>
+
+<p>
+We understand that normal life events, including projects and exams in other
+courses and technical difficulties out of your control, can interfere with your
+ability to complete your work on time.  Our philosophy is that our late work
+policy includes built-in flexibility but that the policy will be uniformly
+applied to all students.  Exceptions to this policy will be made only in
+extraordinary circumstances, almost always involving a family or medical
+emergency with your academic advisor or the Dean of Student Affairs
+requesting such exceptions on your behalf.
+</p>
+
+<p>
+For most homework deadlines, you may turn in your work up to three days late. You
+begin the semester with <strong>five free late days</strong>.  These are
+automatically applied to late assignments until they are all expended.  You
+cannot defer a free late day from one assignment to another.  Once late days are
+expended, a 10% (full letter grade) penalty applies per-day.  Work turned in
+more than three days late will receive feedback but no credit, i.e., a 100%
+penalty, regardless of late day application/availability.</p>
+
+<hr />
+
+<h3 id="collaboration">Collaboration Policy</h3>
+
+We expect that your work on individual assignments, projects, and exams will be
+your own work.  Thus, you may not copy any part of a solution to a problem that
+was written by another student, or was developed together with another student,
+or was copied from another unauthorized source such as the Internet. You may not
+look at another student's solution, even if you have completed your own, nor may
+you knowingly give your solution to another student or leave your solution where
+another student can see it.
+</p>
+
+<p>
+Here are some examples of behavior that are inappropriate:
+<ul>
+<li> Copying files or parts of files (such as source code, written text, or unit tests) from another person or source.
+<li> Copying (or retyping) files or parts of files with minor modifications such as style changes or minor logic modifications.
+<li> Allowing someone else to copy your code or written assignment, either in draft or final form.
+<li> Getting help that you do not fully understand, and from someone whom you do not acknowledge on your solution.
+<li> Writing, using, or submitting a program that attempts to alter or erase grading information or otherwise compromise security of course resources.
+<li> Copying someone else's files containing draft solutions, even if the file permissions are incorrectly set to allow it.
+<li> Lying to course staff.
+<li> Copying prose or programs directly.
+<li> Giving copies of work to others.
+<li> Making your work publicly available in a way that other students (current or future) can access your solutions, even if others' access is accidental or incidental to your goals.
+<li> Coaching others step-by-step without them understanding your help.
+</ul>
+</p>
+
+<p>
+If any of your work contains any statement that was not
+written by you, you must put it in quotes and cite the source. If you
+are paraphrasing an idea you read elsewhere, you must acknowledge the
+source. Using existing material without proper citation is
+plagiarism, a form of cheating. If there is any question about
+whether
+the material is permitted, you must get permission in advance. We
+will be using automated systems to detect software plagiarism.
+</p>
+<p>
+It is not considered cheating to clarify vague points in the
+assignments, lectures, lecture notes, or to give help or receive help
+in using the computer systems, compilers, debuggers, profilers, or
+other facilities.
+</p>
+<p>
+Some assignments are specifically noted as group projects. For
+these, interpret "you" in the preceeding paragraphs to mean "you and
+your partner(s)."
+</p>
+<p>
+Any violation of this policy
+is cheating. The minimum penalty for cheating (including
+plagiarism) will be a zero
+grade for the whole assignment. Cheating incidents will also be
+reported through University channels, with possible additional
+disciplinary action. For more information, see the <a
+ href="https://www.cmu.edu/policies/student-and-student-life/academic-integrity.html">University Policy on Academic Integrity</a>.  There is no statute of limitations for violations of the collaboration policy; penalties may be assessed (and referred to the university disciplinary board) after you have completed the course, and some requirements of the collaboration policy (such as restrictions on you posting your solutions) extend beyond your completion of the course.<br>
+</p>
+
+<p>
+If you have any question about how this policy
+applies in a particular situation, ask the instructors or TAs for
+clarification.
+</p>
+
+<hr />
+
+<h3 id="accomodations">Accommodations</h3>
+
+<p>If you have a disability and require
+accommodations, please contact Catherine Getchell, Director of Disability Resources, 412-268-6121,
+<a href="mailto:getchell@cmu.edu">getchell@cmu.edu</a>. If you have an
+accommodations letter from the Disability Resources office, We encourage you to
+discuss your accommodations and needs with me as early in the semester as
+possible. We will work with you to ensure that accommodations are provided as
+appropriate.</p>
+
+
+<hr />
+
+
+<!-- Hidden for COVID. Restore in future.
+
+
+<h3>Electronics Policy</h3>
+
+<p>Educational research indicates that the use of electronic devices in typical
+classroom situations detracts from learning.  Thus, to enhance your learning and
+that of others in the class, and to encourage active class participation, we
+generally do not allow the use of electronic devices during lectures.  I make
+exceptions by request (no reason/explanation required), but ask that those who
+use electronics ensure they stay focused on course materials.
+
+<p> Many of the recitation exercises rely on laptops, so we encourage students
+to bring their laptops to recitation section.
+-->
+
+<h3>Pandemic Mode</h3>
+
+<p>This class is <em>in-person expected</em>, and lecture will include exercises.  Much of the course instruction involves the board.  We will investigate the A/V situation at the start of the semester to see how well it supports recording over zoom; if at all possible, we will record lecture and share the recordings after the fact (we won't livestream). See above for discussion of how to make up class that you have to miss.
+
+<p>At any point during the semester, if you are feeling sick and/or are exhibiting any symptoms of COVID-19 (or anything else! Don't come to class with the flu, either!), please do not come to class. Do reach out to the instructors if you require any unanticipated health-related accommodations.</p>
+
+<hr />
+
+<h3 id="collaboration">Your health matters</h3>
+
+<p>When we say "your health matters" we mean exactly that:  Your health matters.  We don't intend to imply that other peoples' health does not matter, or that your health matters more or less than theirs.  It's just that we know that CMU can be a stressful, risky environment, and <em>your</em> health is the health that is relevant in this conversation.</p>
+
+<p><strong>Please take care of yourself</strong>.  Do your best to maintain a healthy lifestyle this semester by eating well, exercising, avoiding drugs and alcohol, getting enough sleep and taking some time to relax. This will help you achieve your goals and cope with stress.</p>
+
+<p>All of us benefit from support during times of struggle. You are not alone. There are many helpful resources available on campus and an important part of the college experience is learning how to ask for help. Asking for support sooner rather than later is often helpful.</p>
+
+<p>If you or anyone you know experiences any academic stress, difficult life events, or feelings like anxiety or depression, we strongly encourage you to seek support. Counseling and Psychological Services (CaPS) is here to help: call 412-268-2922 and visit their website at <a href="http://www.cmu.edu/counseling/">http://www.cmu.edu/counseling/</a>.  Consider reaching out to a friend, faculty or family member you trust for help getting connected to the support that can help.</p>
+
+</div>
+
+</body>
+</html>
