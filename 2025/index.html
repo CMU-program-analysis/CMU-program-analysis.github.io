@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <title>17-355/17-665/17-819: Program Analysis</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta content="Claire Le Goues" name="author">
+    <meta content="17-355/17-665/17-819: Program Analysis" name="description">
+  </head>
+  <body>
+<nav id="navigation">
+  <div class="container">
+    <div class="course-semester">
+      <div class="course"><a href="index.html">17-355/17-665/17-819</a></div>
+      <div class="semester">Spring 2025</div>
+    </div>
+    <div id="hamburger" onclick="toggle()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <ul>
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="syllabus.html">Syllabus</a></li>
+      <li><a href="index.html#schedule">Schedule</a></li>
+      <li><a href="#" onclick="alert('In preparation'); return false;">Canvas</a></li>
+      <li><a href="#" onclick="alert('In preparation'); return false;">Gradescope</a></li>
+      <li><a href="#" onclick="alert('In preparation'); return false;">Piazza</a></li>
+      <!--<li><a href="https://classroom.github.com/classrooms/16467351-cmu-program-analysis-classroom-s23"><img src="github.svg" style="width:20px" alt="github logo"/></a></li>-->
+    </ul>
+  </div>
+</nav>
+
+<header id="top" class="container">
+  <h1>17-355/17-665/17-819 Program Analysis</h1>
+</header>
+
+<div id="main" class="container">
+
+  <div class="cf">
+
+  <h2>Course Description</h2>
+  <p>This course covers both foundations and practical aspects of the automated
+  analysis of programs, which is becoming increasingly critical to find software
+  errors and assure program correctness.  The theory of abstract interpretation
+  captures the essence of a broad range of program analyses and supports
+  reasoning about their correctness.  Building on this foundation, the course
+  will describe program representations, data flow analysis, alias analysis,
+  interprocedural analysis, dynamic analysis, and symbolic execution.  Through
+  assignments and projects, students will design and implement practical
+  analysis tools that find bugs and verify properties of software.</p>
+
+<p><em>This course fulfills the <strong>Logic and Languages constrained elective category</strong> for the Computer Science major as well as the <strong>Theoretical Foundations</strong> requirement of the Computer Science master's degree.</em></p>  
+
+    <h3><span style="color:brown">Why take this course?</span></h3>
+    <ul>
+      <li><b>Explore the meaning of programs.</b>  One of the most basic questions that programmers ask is "What does this program do?"  Program analysis is all about understanding programs--automatically!</li>
+      <li><b>Learn deep theory.</b>  The theory of abstract interpretation stands with type theory as the most important and beautiful foundations of programming languages.  Abstract interpretation is the fundamental theory of abstraction: how to precisely relate the concrete execution of a program to an abstraction of that execution.  Naturally, this has many applications, which brings us to the third reason to take this course:</li>
+      <li><b>Build awesome tools.</b>  Using program analysis, you can build tools that find bugs, prove important security and correctness properties, automatically generate useful tests, and much more--and you'll have a chance to do all of this in course assignments and a project that you can design yourself (if you want).</li>
+    </ul>
+
+<h2>Logistics and People</h2>
+      <p>Class: Tue/Thu 2:00 — 3:20 p.m. in <abbr title="Gates and Hillman Center">GHC</abbr> 4102<br />
+      Recitation: Fri 10:00 a.m. — 10:50 a.m. in <abbr title="Wean Hall">WEH</abbr> 5320<br />
+      Spring 2025<br />
+      12 units</p>
+    <div class="instructor">
+      Professor <strong><a href="https://rohan.padhye.org">Rohan Padhye</a></strong><br />
+      Office hours: TBD in TCS 325<br />
+      Email: rohanpadhye@cmu.edu<br />
+      <img src="padhye.jpg" alt="Headshot of Professor Rohan Padhye" />
+    </div>
+    <div class="instructor">
+       TA: <strong><a href="">Vasu Vikram</a></strong><br />
+       Office hours: TBD in TBD<br />
+       Email: vasumv@cmu.edu<br />
+       <img src="vasu.jpg" alt="Headshot of teaching assistant Vasu Vikram" />
+    </div>
+  </div>
+
+  <h2>Course Syllabus and Policies</h2>
+    <p>The <a href="syllabus.html">syllabus</a> covers course learning objectives, supplemental textbooks, assessments, late work policy, and policies.  Consult Canvas and especially Piazza for up-to-date announcements and discussion (links in header).</p>
+
+  <section id="schedule">
+    <h2>Schedule</h2>
+
+    <p>As of July 2025, we have endeavored to make this schedule, including assignment due dates, as accurate as possible.  However, it is subject to change as the semester advances.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 8em;">Date</th>
+          <th>Topic</th>
+          <th>Reading/Material</th>
+          <th>HW Due</th>
+          <th>Optional Reading</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Aug 26</td>
+          <td>Introduction, Program Representation, and Syntactic Analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 1 &amp; 2 <!--<a href="lecture-slides/01-introduction.pdf">slides</a></td>-->
+          <td></td>
+          <td>PPA ch. 1</td>
+        </tr>
+        <tr>
+          <td>Aug 28</td>
+          <td>Program Semantics</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 3 <!--<a href="lecture-slides/02-semantics.pdf">slides</a></td>-->
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Aug 29</td>
+          <td><span class="rec">recitation</span> CodeQL</td>
+          <td> <!--<a href="https://github.com/CMU-program-analysis/sp2023-recitation1">notes</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 1 -->
+
+        <tr>
+          <td>Sep 2</td>
+          <td>Program Semantics (cont.)</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Sep 4</td>
+          <td>Program Semantics (cont.)</td>
+          <td></td>
+          <td><!--<span class="hw">hw1</span> (see Canvas)--> </td>
+          <td>PPA ch. 2 &amp; 6</td>
+        </tr>
+        <tr>
+          <td>Sep 5</td>
+          <td><span class="rec">recitation</span> Semantics</td>
+          <td> <!--<a href="resources/recitation-2-2024.pdf">ex1</a>, <a href="resources/recitation-2-solns.pdf">ex2</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 2 -->
+		
+        <tr>
+          <td>Sep 9</td>
+          <td>Dataflow Analysis &amp; Abstract Interpretation Framework</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 4 <!--, <a href="lecture-slides/04-dataflow-frameworks.pdf">slides</a>-->
+          <td></td>
+          <td>PPA ch. 2.1</td>
+        </tr>
+        <tr>
+          <td>Sep 11</td>
+          <td>Dataflow Analysis examples</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 5 <!--, <a href="lecture-slides/05-dataflow-examples.pdf">slides</a>--></td>
+          <td><!--<span class="hw">hw2</span> <a href="resources/hw2.pdf">pdf</a> <a href="resources/mathpartir.zip">mathpartir</a>--> </td>
+          <td>PPA ch. 2</td>
+        </tr>
+        <tr>
+          <td>Sep 12</td>
+          <td><span class="rec">recitation</span> Specifying/Implementing Dataflow Analysis</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 3 -->
+		
+        <tr>
+          <td>Sep 16</td>
+          <td>Dataflow Analysis examples (cont.)</td>
+          <td><!--, <a href="lecture-slides/06-termination-complexity.pdf">slides</a>--></td>
+          <td></td>
+          <td>PPA ch. 2.2—2.3</td>
+        </tr>
+        <tr>
+          <td>Sep 18</td>
+          <td>Termination and Correctness</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 6</td>
+          <td><!--<span class="hw">hw3</span> <a href="resources/hw3.pdf">pdf</a>--> </td>
+          <td>PPA ch. 2.3—2.4</td>
+        </tr>
+        <tr>
+          <td>Sep 19</td>
+          <td><span class="rec">recitation</span> Data-Flow Analysis Correctness</td>
+          <td> <!--<a href="resources/recitation-4.pdf">notes</a>, <a href="resources/recitation-4-sol2.jpeg">sol2</a>, <a href="resources/recitation-4-sol2-detailed.jpeg">sol2det</a>, <a href="resources/recitation-4-sol3.jpeg">sol3</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 4 -->
+		
+        <tr>
+          <td>Sep 23</td>
+          <td>Termination and Correctness</td>
+          <td></td>
+          <td></td>
+          <td>PPA ch. 2.5</td>
+        </tr>
+        <tr>
+          <td>Sep 25</td>
+          <td>Precision and Widening</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 7</td>
+          <td><!--<span class="hw">hw4</span> <a href="resources/hw4.pdf">pdf</a> (due 9/29)--> </td>
+          <td>PPA ch. 2.5</td>
+        </tr>
+        <tr>
+          <td>Sep 26</td>
+          <td><span class="rec">recitation</span></td>
+          <td> <!--<a href="https://github.com/CMU-program-analysis/fall2024-recitation5">repo</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 5 -->
+		
+        <tr>
+          <td>Sep 30</td>
+          <td>Interprocedural analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 8 <!-- <a href="lecture-slides/09-interprocedural-analysis.pdf">slides</a><br /><a href="resources/handout-ipa-non-recursive.pdf">handout 1</a>, <a href="resources/handout-ipa-context-sensitive.pdf">handout 2</a>--></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Oct 2</td>
+          <td>Context-Sensitive Analysis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 8 &amp; ch. 10.2 <!--<a href="lecture-slides/10-context-sensitive-analysis.pdf">slides</a>--></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Oct 6</td>
+          <td><span class="rec">recitation</span> Midterm review. Class will be in TCS460 @ 1pm</td>
+          <td> <!--<a href="resources/studyguide1.pdf">Midterm Study Guide</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 6 -->
+		
+        <tr>
+          <td>Oct 7</td>
+          <td>Pointer Analysis + Call Graphs for Object-Oriented Languages</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 10<!-- <a href="lecture-slides/11-pointer-analysis.pdf">slides</a>--></td>
+          <td><!--<span class="hw">hw5 checkpoint</span> <a href="resources/hw5.pdf">pdf</a>--> </td>
+          <td>PPA ch. 3</td>
+        </tr>
+        <tr class="midterm">
+          <td>Oct 9</td>
+          <td>Midterm exam 1</td>
+          <td></td>
+          <td><!--<span class="hw">midterm</span>--></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Oct 10</td>
+          <td><span class="rec">no recitation</span></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+
+        <tr class="noclass">
+          <td>Oct 13—17</td>
+          <td>Fall Break; no classes</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+        </tr>
+        <tr>
+        </tr>
+        <!-- End Week 7 -->
+		
+        <tr>
+          <td>Oct 21</td>
+          <td>Intro to Hoare Logic</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 11 <!--, <a href="lecture-slides/14-hoare-logic.pdf">slides</a>--></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Oct 23</td>
+          <td>Verification using Hoare Logic</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 11 <!--, <a href="lecture-slides/14-hoare-logic.pdf">same slides</a>--></td>
+          <td><!--<span class="hw">hw5</span> <a href="resources/hw5.pdf">pdf</a>--> </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Oct 24</td>
+          <td><span class="rec">recitation</span> Hoare Logic Proofs using Axiomatic Semantics</td>
+          <td> <!--<a href="resources/recitation-7.pdf">notes</a>, <a href="resources/recitation-7-solns.pdf">solutions</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 8 -->
+
+        <tr>
+          <td>Oct 28</td>
+          <td>Symbolic Execution</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 13<!--, <a href="lecture-slides/16-symbolic-execution.pdf">slides</a>--></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Oct 30</td>
+          <td>Concolic Testing</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 14 <!--, <a href="lecture-slides/18-concolic-testing.pdf">slides</a>--></td>
+          <td><!--<span class="hw">hw6</span> <a href="resources/hw6.pdf">pdf</a>--> </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Oct 31</td>
+          <td><span class="rec">recitation</span> Midterm 1 review</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 9 -->
+		
+        <tr class="noclass">
+          <td>Nov 4</td>
+          <td>Democracy Day; no class</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Nov 6</td>
+          <td>Satisfiability Modulo Theories</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 12 <!--, <a href="lecture-slides/17-smt.pdf">slides</a>--></td>
+          <td><!--<span class="hw">hw7</span> <a href="resources/hw7.pdf">pdf</a> (due 11/10) <br /> 
+            <a href="resources/project.pdf">project proposal</a>--> </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Nov 7</td>
+          <td><span class="rec">recitation</span> Intro to Z3</td>
+          <td> <!--<a href="https://github.com/CMU-program-analysis-sp22/recitation-8">repo</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 10 -->
+		
+        <tr>
+          <td>Nov 11</td> 
+          <td>Satisfiability Modulo Theories (cont.)</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Nov 13</td>
+          <td>Program Synthesis</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 15<!--, <a href="lecture-slides/19-synthesis.pdf">slides</a>--></td>
+          <td><!--<span class="hw">project proposal</span> <br /> <a href="resources/project.pdf">project instructions</a>--></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Nov 14</td>
+          <td><span class="rec">recitation</span> Simple synthesis using Z3</td>
+          <td> <!--<a href="https://github.com/CMU-program-analysis/sp2023-recitation9">repo</a>
+            <a href="resources/recitation9-ex2.py">ex2-sol (w/bug)</a>
+            <a href="resources/recitation9-ex2-synth.py">ex2-synth</a>--> </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 11 -->
+
+        <tr>
+          <td>Nov 18</td>
+          <td>Program Repair (guest lecture by Claire Le Goues)</td>
+          <td><!--<a href="resources/program-analysis.pdf">Text</a> ch. 16, <a href="lecture-slides/20-fuzzing.pdf">slides</a>--></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Nov 20</td>
+          <td>Temporal Logic and Model Checking (guest lecture by Ian)</td>
+          <td><a href="resources/temporal-logic-mc.pdf">supplementary reading</a></td>
+          <td><!--<span class="hw">hw8</span> <a href="resources/hw8.pdf">pdf</a>--> </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Nov 21</td>
+          <td><span class="rec">recitation</span> Midterm review</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 12 -->
+		
+        <tr class="midterm">
+          <td>Nov 25</td>
+          <td>Midterm exam 2</td>
+          <td></td>
+          <td><!--<span class="hw">midterm</span>--></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Nov 27</td>
+          <td>Thanksgiving Break; no class</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr class="noclass">
+          <td>Nov 28</td>
+          <td><span class="rec">No recitation</span></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 13 -->
+		
+        <tr>
+          <td>Dec 2</td>
+          <td>Dynamic Analysis (Fuzz Testing, Invariant Generation)</td>
+          <td><a href="resources/program-analysis.pdf">Text</a> ch. 16 <!--, <a href="lecture-slides/14-hoare-logic.pdf">same slides</a>--></td> <!-- Daikon paper? --> 
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Dec 4</td>
+          <td>Review and Project Discussions</td>
+          <td><!--<a href="lecture-slides/25-review.pdf">slides</a>--></td>
+          <td><!--<span class="hw">project checkpoint</span><br /><a href="resources/project.pdf">same pdf</a>--></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Dec 5</td>
+          <td><span class="rec">recitation</span> Dynamic analysis on stack machine bytecode</td>
+          <td><!--<a href="https://github.com/CMU-program-analysis/sp2023-recitation10">repo</a>--></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- End Week 14 -->
+		
+        <tr class="final">
+          <td>Dec TBD</td>
+          <td>Project Presentations (Time/location TBD)</td>
+          <td></td>
+          <td><!--<span class="hw">project final report</span><br /><a href="resources/project.pdf">same pdf</a>--></td>
+          <td></td>
+        </tr>
+        <!-- End Semester -->
+		
+      </tbody>
+    </table>
+  </section>  
+  
+</div>
+  </body>
+</html>
