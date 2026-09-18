@@ -1,0 +1,146 @@
+\documentclass[11pt]{article}
+\usepackage{palatino}
+\usepackage{latexsym}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{alltt}
+\usepackage{amsmath,proof,amsthm,amssymb,enumerate,mathabx}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{listings}
+\usepackage[shortlabels]{enumitem}
+\usepackage{url}
+
+\def\prop{\textsf{\,\,prop}}
+\def\thm{\textsf{\,\,thm}}
+\def\implies{\Rightarrow}
+
+\newcommand{\parg}[1] % program argument
+  {\ldbrack #1 \rdbrack}
+
+
+\newcounter{qnum}
+\setcounter{qnum}{1}
+
+\title{Homework 4 (Written): Analysis Correctness}
+\author{17-355/17-665/17-819: Program Analysis\ \emph {Fall 2026}\\
+        Fraser Brown, Yiliang Liang }
+		
+\date{Due: Tuesday, September 29, 2026 11:59 pm \\[1em]
+100 points total
+}
+
+
+\newcommand{\question}[2]
+  {\bigskip \noindent
+  {\bf Question \arabic{qnum}}, {#1}, {\it(#2 points).}
+  \addtocounter{qnum}{1}
+  }
+
+\newcommand{\extracreditquestion}[3]
+  {\bigskip \noindent
+   {\bf Question #1} {#2}{(#3 points EXTRA CREDIT).}}
+
+\begin{document}
+
+\newcommand{\pfalse}{\mbox{false}}
+\newcommand{\ptrue}{\mbox{true}}
+\newcommand{\pand}{\mbox{and}}
+\newcommand{\por}{\mbox{or}}
+\newcommand{\pskip}{\mbox{skip}}
+\newcommand{\pif}{\mbox{if}}
+\newcommand{\pthen}{\mbox{then}}
+\newcommand{\pelse}{\mbox{else}}
+\newcommand{\pdo}{\mbox{do}}
+\newcommand{\pwhile}{\mbox{while}}
+\def\While{\textsc{While}}
+\def\WhileThAddr{\textsc{While3Addr}}
+
+
+\maketitle
+
+\noindent\textbf{Assignment Objectives:}
+\begin{itemize}[labelwidth=0.7em, labelsep=0.6em, topsep=0ex, itemsep=0ex,
+  parsep=0ex]
+\item  Prove a simple analysis correct; demonstrate the problem with an incorrect analysis.
+\item Gain experience with proof techniques over dataflow frameworks
+\end{itemize}
+
+\paragraph{Handin Instructions.} Submit your assignment through Gradescope by the due
+date. When submitting, indicate which pages of the PDF correspond to each
+homework question. 
+Typesetting is not required, but is strongly suggested; you may submit photos or
+scans of handwritten answers, but they must be clear and legible.  Consult homework 2
+for pointers to useful latex packages.  
+
+We are \emph{not} making correct handin
+worth 5 points explicitly, but we reserve the right to \emph{remove} 5 points if the homework
+is not submitted correctly. 
+
+\question{Unsoundness}{15}  You implemented a simple sign analysis for
+\WhileThAddr \text{ } for Homework 3. Now, consider the following hypothetical 
+but obviously incorrect flow function for simple sign analysis:
+
+\[
+f\parg{x := a + b}(\sigma) = \sigma[x \mapsto \mathrm{Pos}]
+\]
+
+Prove that this function violates the criterion of local soundness (that is,
+there exists some 
+program configuration $E,n$ and an instruction $I$ such that
+$P \vdash \langle E,n \rangle \leadsto \langle E',n' \rangle$ (where $P(n)=I$) and
+$\alpha(E') \not\sqsubseteq f\parg{I}(\sigma)$ where $\sigma = \alpha(E)$)
+\footnote{For simplicity, ignore  $n$ as an argument to $\alpha$.}.
+
+\begin{enumerate}[a), labelwidth=0.7em, labelsep=0.6em, topsep=0ex, itemsep=0ex,
+  parsep=0ex]
+
+\item Give an example $E$ and $I$ illustrating the local unsoundness. \textit{(5 points)}
+
+\item What is $\sigma=\alpha(E)$? \textit{(1 points)}
+
+\item If $P \vdash \langle E,n \rangle \leadsto \langle E',n' \rangle$, what is $\langle E',n' \rangle$? \textit{(2 points)}
+
+\item What is $\alpha(E')$? \textit{(1 points)}
+
+\item What is $\sigma'=f\parg{I}(\sigma)$? \textit{(3 points)}
+
+\item Show that $\alpha(E') \not\sqsubseteq \sigma'$ \textit{(3 points)}
+\end{enumerate}
+
+\newpage
+
+\question{Flow function}{5} Define a sound sign analysis flow function for 
+addition ($x := a + b$). Assume ideal integer arithmetic. You
+can lookup your implementation in HW3 if you want to use the same one. \\
+
+\noindent \emph{Hint: Consider structuring your flow function in a similar manner to the example provided for multiplication in the parity analysis from recitation. This will help minimize the number of cases you will need to prove in the next question.}
+
+\question{Termination and Soundness}{60}
+\begin{enumerate}[(a)]
+\item Prove that your flow function (from Q2) is monotonic. \textit{(20 points)}
+\item
+Give the height of the ``lifted'' dataflow lattice which maps each variable to one
+of the lattice elements for sign analysis (i.e, the set of all $\sigma$ values 
+of the form $Var \rightarrow L$). The height should be expressed in terms of $|\textit{Var}|$, the
+number of variables in scope.  Briefly justify your answer. \textit{(15 points)}
+\item Prove that your flow function (from Q2) is locally sound with respect to the semantics
+  for \WhileThAddr. \textit{(25 points)}
+\end{enumerate}
+
+\question{Precision}{20}
+
+Recall that a flow function is distributive iff $f(\sigma_1) \sqcup f(\sigma_2) = f(\sigma_1 \sqcup \sigma_2)$
+always holds true. Is your flow function for addition as defined in Q2 distributive over $\sqcup$? 
+If yes, prove it (hint: it will be similar to the proof of monotonicity). 
+If no, demonstrate a violation of the distributive law by giving appropriate values for $\sigma_1$, $\sigma_2$, and showing
+that:
+$$f\parg{x := a + b}(\sigma_1) \sqcup f\parg{x := a + b}(\sigma_2) \sqsubset f\parg{x := a + b}(\sigma_1 \sqcup \sigma_2).$$
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
