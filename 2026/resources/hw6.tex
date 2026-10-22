@@ -1,0 +1,174 @@
+\documentclass[11pt]{article}
+\usepackage{palatino}
+\usepackage{latexsym}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{alltt}
+\usepackage{url}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{amsmath,proof,amsthm,amssymb}
+
+\newcommand{\question}[3]
+  {\bigskip \noindent
+  {\bf Question #1}, {#2}, {\it(#3 points).}}
+
+\newcommand{\extracreditquestion}[2]
+  {\bigskip \noindent
+   {\bf Extra Credit Question}, {#1}, {\it(#2 points).}}
+
+\newcommand{\definition}[2]
+  {\bigskip
+   \begin{tabular}{p{1.5in}p{4.0in}}
+        \textbf{#1} & #2 \\
+        \end{tabular}
+  }
+  
+\newcommand{\todo}[1] % something to consider doing in the next round of the course
+  {}
+
+\def\prop{\textsf{\,\,prop}}
+\def\thm{\textsf{\,\,thm}}
+\def\implies{\Rightarrow}
+
+\title{Homework 6: \\ Axiomatic Semantics and Hoare-style Verification}
+\author{17-355/17-665/17-819: Program Analysis \emph{Fall 2026}\\
+        Fraser Brown, Yiliang Liang\\}
+\date{Due: Friday, Oct. 30, 2026 at 11:59 pm EST \\[1em]
+100 points total
+}
+
+\begin{document}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newcommand{\pfalse}{\mbox{false}}
+\newcommand{\ptrue}{\mbox{true}}
+\newcommand{\pand}{\mbox{and}}
+\newcommand{\por}{\mbox{or}}
+\newcommand{\pskip}{\mbox{skip}}
+\newcommand{\pif}{\mbox{if}}
+\newcommand{\pthen}{\mbox{then}}
+\newcommand{\pelse}{\mbox{else}}
+\newcommand{\pdo}{\mbox{do}}
+\newcommand{\pwhile}{\mbox{while}}
+
+
+\maketitle
+
+
+\vspace{1ex}\noindent\textbf{Assignment Objectives:}
+
+\begin{itemize}
+\item Generate verification conditions and show how they are used in program verification. 
+\item Write new Hoare Rules/axiomatic semantics for a particular language.
+\item Reason about soundness/completeness of a system for axiomatic semantics.
+\end{itemize}
+
+\paragraph{Handin Instructions.} Submit your assignment through 
+\href{https://www.gradescope.com/courses/1103580/assignments/6860477/}{Gradescope link} by the due
+date. When submitting, indicate which pages of the PDF correspond to each
+homework question. 
+Typesetting is not required, but is strongly suggested; you may submit photos or
+scans of handwritten answers, but they must be clear and legible.  Consult homework 2
+for pointers to useful latex packages.  
+
+We are \emph{not} making correct handin
+worth 5 points explicitly, but we reserve the right to \emph{remove} 5 points if the homework
+is not submitted correctly. 
+
+
+\question{1}{VCGen}{24}
+Consider the following rules for VCGen.  We saw the first two in class; consider the third one as a proposed rule for $\mathtt{let}$: 
+\[
+\begin{array}{lcl}
+  VCGen(S_1; S_2, Q) & = & VCGen(S_1, VCGen(S_2,Q)) \\
+  VCGen(x := e, Q) & = & [ e/x] Q \\
+  VCGen(\mathtt{let}~x=e~\mathtt{in}~S, Q) & = & [e/x] VCGen(S,Q)
+\end{array}
+\]
+
+\noindent The rule for $\mathtt{let}$ is incorrect. 
+
+%
+\begin{enumerate}[(a)] 
+\item Explain why, briefly, in English prose, 
+\item Give a correct rule for $\mathtt{let}$.  
+\end{enumerate}
+
+\question{2}{Let rule soundness}{18} Recall that we aim to compute a verification condition VC using 
+a verification condition generator procedure $VCGen(S, Q)$ such that our final proof obligation 
+$VC(\{P\}S\{Q\})$ is $P \implies VCGen(S, Q)$. Given $\{P\}S\{Q\}$, we desire that $P \Rightarrow VCGen(S, Q) \Rightarrow \textit{wp}(S,Q).$ We say that our VCGen rules are \emph{sound} iff 
+$VC(\{P\}S\{Q\})\implies ~\vDash ~\{P\}S\{Q\}$. Demonstrate the unsoundness of the buggy $\mathtt{let}$ rule above by giving/showing the following six things:
+%
+\begin{enumerate}[(a)]
+\item a statement $S$ and
+\item a post-condition $Q$ and
+ \item a state $E$, all such that
+ \item $E ~\vDash~ VCGen(S, Q)$ and 
+ \item $\langle S, E \rangle \Downarrow E'$ but
+ \item $E' \nvDash Q$  
+\end{enumerate}
+
+\question{3}{Do-while}{10} Write a sound and complete Hoare rule for $\mathtt{do}~S~\mathtt{while}~b$. The statement has the standard semantics (i.e., $S$ is executed at least once, before $b$ is tested).  You do not need to formally prove soundness/completeness, but make sure the rule makes sense.
+
+\question{4}{Loop proof obligations}{24}
+Consider the following program:
+\begin{verbatim}
+{N > 0 }
+i := 0;
+while (i < N) do
+     i := i + 1
+{i=N}
+\end{verbatim}
+
+\begin{enumerate}
+\item What is a suitable loop invariant for proving this post-condition holds? 
+\item  Write out the verification condition for this program (don't forget to use the precondition!).  You don't have to solve/prove the verification condition, just write it out neatly; it should be formatted so that it's especially clear which parts correspond to the three parts of the proof obligations for the loop: 
+\begin{itemize}
+\item Invariant is initially true:
+\item Invariant is preserved by the loop body:
+\item Invariant and exit condition imply postcondition:
+\end{itemize}
+\end{enumerate}
+
+\emph{Hint: you can get full credit on the second part even if your loop invariant (answer to the first part) is incorrect. }
+
+\question{5}{Soundness/Completeness}{24}  Consider the following three Hoare rules:
+
+\[
+\begin{array}{ccc}
+\infer[$rule1$]
+{\vdash \{ b \Rightarrow X \wedge \neg b \Rightarrow Y \}~\mathtt{while}~b~\mathtt{do}~S~\{Y\}}
+{\vdash \{ X \}~ S~ \{ b \Rightarrow X \wedge \neg b \Rightarrow Y \}} 
+%
+& ~~~~ &
+%
+\infer[$rule2$]{\vdash \{ X \}~ \mathtt{while}~b~\mathtt{do}~S~\{X \}}
+{\vdash \{ X \wedge b \}~ S~ \{ X \} } \\
+\end{array}
+\]
+\[
+\begin{array}{c}
+\infer[$rule3$]
+{\{X \}~ \mathtt{while}~b~\mathtt{d}~S~\{X \wedge \neg b \}}
+{\vdash \{ X \}~S~\{ X \}}
+\end{array}
+\]
+
+ Recall that a system of axiomatic semantics is \emph{sound} if everything we can prove is also true: if $\vdash \{ P \}~S~\{ Q \}$ then $\vDash \{ P \}~S~\{ Q \}$.  A system of axiomatic semantics is \emph{complete} if we can prove all true things: if $\vDash \{ P \}~S~\{ Q \}$ then $\vdash \{ P \}~S ~\{ Q \}$.   All three of the rules above are sound, but none are complete.
+ 
+\vspace{1em}
+\noindent For two of the identified incomplete rules, give/show example $P$, $Q$, $E$, $S$, and $E'$ such that  $\langle S, E \rangle \Downarrow E'$  and both  $E \vDash P$ and and $E' \vDash Q$, but it is not possible given the rule to prove $\vdash \{P\}~S~\{Q\}$.  Be clear about which rules you have chosen.
+
+\vspace{1em}
+\textit{(Educational) note: An incomplete system cannot prove all possible properties or handle all possible programs. Incompleteness in an axiomatic semantics or type system is typically not as dire as unsoundness.  Many research results that claim to work for the C language, for example, are actually incomplete because they fail to address, say, setjmp/longjmp or bitfields. (Many of them are also unsound because they do not correctly model various language features like unsafe casts, pointer arithmetic, or integer overflow.)}
+
+\vspace{1em}
+\noindent \textit{Acknowledgement: Thanks to Selva Samuel for finding a bug in the original formulation of this question back in 2016.}
+
+
+
+\end{document}
